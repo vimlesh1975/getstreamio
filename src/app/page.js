@@ -7,6 +7,22 @@ export default function HomePage() {
   const [name, setName] = useState("");
   const router = useRouter();
 
+
+  async function startRTMP() {
+  await fetch("/api/start-rtmp", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      callId: "room-1",
+      rtmpUrl: "rtmp://localhost/live",
+      streamKey: "stream",
+    }),
+  });
+
+  alert("RTMP started");
+}
+
+
   return (
     <main style={{ padding: 40 }}>
       <h1>Stream Zoom Clone (JSX)</h1>
@@ -23,6 +39,9 @@ export default function HomePage() {
       >
         Join Call
       </button>
+
+      <button onClick={startRTMP}>Start Broadcast</button>
+
     </main>
   );
 }
