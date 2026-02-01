@@ -8,11 +8,10 @@ import {
   useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/stream";
+import { setLiveParticipant } from "@/state/output";
 
-const HOST_ID = "host";
-
-export default function CallerPage() {
-  const userId = crypto.randomUUID().slice(0, 8);
+export default function HostPage() {
+  const userId = "host";
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
 
@@ -26,39 +25,36 @@ export default function CallerPage() {
     })();
   }, []);
 
-  if (!client || !call) return <p>Joining call…</p>;
+  if (!client || !call) return <p>Joining as host…</p>;
 
   return (
     <StreamVideo client={client}>
       <StreamCall call={call}>
-        <CallerUI />
+        <HostUI call={call} />
       </StreamCall>
     </StreamVideo>
   );
 }
 
-function CallerUI() {
+function HostUI({ call }) {
   const { useParticipants } = useCallStateHooks();
   const participants = useParticipants();
 
-  const self = participants.find((p) => p.isLocal);
-  const host = participants.find((p) => p.userId === HOST_ID);
-
   return (
     <div style={{ padding: 16 }}>
-      <h1>📞 Caller</h1>
+      <h1>🎬 Host Control Room</h1>
 
-      <div style={{ display: "flex", gap: 16 }}>
-        {[host, self].filter(Boolean).map((p) => (
-          <video
-            key={p.sessionId}
-            ref={(el) => el && p.videoStream && (el.srcObject = p.videoStream)}
-            autoPlay
-            muted={p.isLocal}
-            style={{ width: 400, background: "#000" }}
-          />
-        ))}
-      </div>
+      {participants.map((p) => (
+        <div key={p.sessionId} style={{ marginBottom: 10 }}>
+          <span>{p.userId}</span>
+          <button
+            style={{ marginLeft: 10 }}
+            onClick={() => setLiveParticipant(call, p.userId)}
+          >
+            TAKE LIVE
+          </button>
+        </div>
+      ))}
 
       <CallControls />
     </div>
