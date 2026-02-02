@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   StreamVideo,
   StreamCall,
   useCall,
   useCallStateHooks,
+  useParticipantVideoTrack,
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/stream";
 
@@ -19,7 +20,7 @@ export default function HostPage() {
       const c = await createStreamClient(userId);
       const call = c.call("default", "room-1");
 
-      // ✅ Host joins immediately (NO media)
+      // Host joins immediately, no media
       await call.join({
         create: false,
         video: false,
@@ -31,9 +32,7 @@ export default function HostPage() {
     })();
   }, []);
 
-  if (!client || !call) {
-    return <p>Loading host…</p>;
-  }
+  if (!client || !call) return <p>Loading host…</p>;
 
   return (
     <StreamVideo client={client}>
@@ -51,7 +50,7 @@ function HostInner() {
 
   const [accepted, setAccepted] = useState(false);
 
-  // 🔑 Enable / disable host camera based on accept
+  // Enable / disable host camera
   useEffect(() => {
     if (!call) return;
 
@@ -64,26 +63,18 @@ function HostInner() {
     }
   }, [call, accepted]);
 
-  // Detect caller presence
-  const hasCaller = participants.some((p) => !p.isLocal);
+  const hasCaller = participants.some(p => !p.isLocal);
 
-  const local = participants.find((p) => p.isLocal);
-  const remote = participants.find((p) => !p.isLocal);
+  const local = participants.find(p => p.isLocal);
+  const remote = participants.find(p => !p.isLocal);
 
-  // 🟡 BEFORE ACCEPT
   if (!accepted) {
     return (
       <div style={{ padding: 20 }}>
         <h1>🎧 Host</h1>
-
         <button
           onClick={() => setAccepted(true)}
           disabled={!hasCaller}
-          style={{
-            padding: "10px 16px",
-            fontSize: 16,
-            cursor: hasCaller ? "pointer" : "not-allowed",
-          }}
         >
           {hasCaller ? "✅ Accept Call" : "Waiting for call…"}
         </button>
@@ -91,44 +82,47 @@ function HostInner() {
     );
   }
 
-  // 🟢 AFTER ACCEPT
   return (
     <div style={{ padding: 20 }}>
       <h1>🎥 Host + Caller</h1>
 
       <div style={{ display: "flex", gap: 20 }}>
-        {/* HOST SELF CAMERA */}
-        {local?.videoStream && (
-          <video
-            ref={(el) => el && (el.srcObject = local.videoStream)}
-            autoPlay
-            playsInline
-            muted
-            style={{
-              width: 400,
-              height: 300,
-              background: "black",
-            }}
-          />
-        )}
-
-        {/* CALLER CAMERA */}
-        {remote?.videoStream ? (
-          <video
-            ref={(el) => el && (el.srcObject = remote.videoStream)}
-            autoPlay
-            playsInline
-            muted
-            style={{
-              width: 400,
-              height: 300,
-              background: "black",
-            }}
-          />
+        {local && <VideoTile participant={local} muted />}
+        {remote ? (
+          <VideoTile participant={remote} />
         ) : (
           <p>Waiting for caller video…</p>
         )}
       </div>
     </div>
+  );
+}
+
+function VideoTile({ participant, muted }) {
+  const videoRef = useRef(null);
+
+  const { videoTrack } = useParticipantVideoTrack(
+    participant.sessionId
+  );
+
+  useEffect(() => {
+    if (!videoTrack || !videoRef.current) return;
+
+    const stream = new MediaStream([videoTrack]);
+    videoRef.current.srcObject = stream;
+  }, [videoTrack]);
+
+  return (
+    <video
+      ref={videoRef}
+      autoPlay
+      playsInline
+      muted={muted}
+      style={{
+        width: 400,
+        height: 300,
+        background: "black",
+      }}
+    />
   );
 }
