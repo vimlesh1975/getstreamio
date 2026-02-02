@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   StreamVideo,
   StreamCall,
+  ParticipantView,
   useCall,
   useCallStateHooks,
-  useParticipantVideoTrack,
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/stream";
 
@@ -20,7 +20,7 @@ export default function HostPage() {
       const c = await createStreamClient(userId);
       const call = c.call("default", "room-1");
 
-      // Host joins immediately, no media
+      // Host joins immediately (no media published)
       await call.join({
         create: false,
         video: false,
@@ -72,9 +72,11 @@ function HostInner() {
     return (
       <div style={{ padding: 20 }}>
         <h1>🎧 Host</h1>
+
         <button
           onClick={() => setAccepted(true)}
           disabled={!hasCaller}
+          style={{ padding: "10px 16px", fontSize: 16 }}
         >
           {hasCaller ? "✅ Accept Call" : "Waiting for call…"}
         </button>
@@ -87,42 +89,23 @@ function HostInner() {
       <h1>🎥 Host + Caller</h1>
 
       <div style={{ display: "flex", gap: 20 }}>
-        {local && <VideoTile participant={local} muted />}
+        {local && (
+          <ParticipantView
+            participant={local}
+            muted
+            style={{ width: 400, height: 300 }}
+          />
+        )}
+
         {remote ? (
-          <VideoTile participant={remote} />
+          <ParticipantView
+            participant={remote}
+            style={{ width: 400, height: 300 }}
+          />
         ) : (
           <p>Waiting for caller video…</p>
         )}
       </div>
     </div>
-  );
-}
-
-function VideoTile({ participant, muted }) {
-  const videoRef = useRef(null);
-
-  const { videoTrack } = useParticipantVideoTrack(
-    participant.sessionId
-  );
-
-  useEffect(() => {
-    if (!videoTrack || !videoRef.current) return;
-
-    const stream = new MediaStream([videoTrack]);
-    videoRef.current.srcObject = stream;
-  }, [videoTrack]);
-
-  return (
-    <video
-      ref={videoRef}
-      autoPlay
-      playsInline
-      muted={muted}
-      style={{
-        width: 400,
-        height: 300,
-        background: "black",
-      }}
-    />
   );
 }
