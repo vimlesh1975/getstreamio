@@ -5,6 +5,7 @@ import {
   StreamVideo,
   StreamCall,
   useCall,
+  useCallStateHooks,
   ParticipantView,
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/stream";
@@ -14,6 +15,9 @@ export default function CallerPage() {
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
   const [calling, setCalling] = useState(false);
+
+    const { useParticipants } = useCallStateHooks();
+    const participants = useParticipants();
 
   useEffect(() => {
     (async () => {
