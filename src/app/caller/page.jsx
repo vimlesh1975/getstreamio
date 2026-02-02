@@ -27,9 +27,7 @@ export default function CallerPage() {
     })();
   }, []);
 
-  if (!client || !call) {
-    return <p>Loading caller…</p>;
-  }
+  if (!client || !call) return <p>Loading caller…</p>;
 
   return (
     <StreamVideo client={client}>
@@ -45,23 +43,24 @@ export default function CallerPage() {
 }
 
 function CallerInner({ call, joined, setJoined }) {
-  const { useParticipants } = useCallStateHooks();
-  const participants = useParticipants();
+  const {
+    useParticipants,
+    useLocalParticipant,
+  } = useCallStateHooks();
 
-  const self = participants.find((p) => p.isLocal);
+  const participants = useParticipants();
+  const self = useLocalParticipant();
   const host = participants.find(
     (p) => p.userId === "host"
   );
 
   async function startCall() {
-    // 🔴 JOIN FIRST
     await call.join({
       create: true,
       video: true,
       audio: true,
     });
 
-    // ✅ Only now allow rendering
     setJoined(true);
   }
 
@@ -74,7 +73,6 @@ function CallerInner({ call, joined, setJoined }) {
           style={{
             padding: "10px 16px",
             fontSize: 16,
-            cursor: "pointer",
           }}
         >
           📲 Call
