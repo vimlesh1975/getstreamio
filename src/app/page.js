@@ -13,58 +13,56 @@ export default function ReceiverPage() {
   const userId = "receiver";
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
-  const [accepted, setAccepted] = useState(false);
 
   useEffect(() => {
     (async () => {
       const c = await createStreamClient(userId);
       const call = c.call("default", "room-1");
+
+      // ✅ HOST JOINS IMMEDIATELY (NO MEDIA)
+      await call.join({
+        create: false,
+        video: false,
+        audio: false,
+      });
+
       setClient(c);
       setCall(call);
     })();
   }, []);
 
-  if (!client || !call) return <p>Loading…</p>;
+  if (!client || !call) return <p>Loading receiver…</p>;
 
   return (
     <StreamVideo client={client}>
       <StreamCall call={call}>
-        <HostInner
-          call={call}
-          accepted={accepted}
-          setAccepted={setAccepted}
-        />
+        <HostInner />
       </StreamCall>
     </StreamVideo>
   );
 }
 
-function HostInner({ call, accepted, setAccepted }) {
+function HostInner() {
+  const call = useCall();
   const videoRef = useRef(null);
   const { useParticipants } = useCallStateHooks();
   const participants = useParticipants();
 
-  // 🔴 HARD RULE: host never publishes
+  const [accepted, setAccepted] = useState(false);
+
+  // 🔒 Host NEVER publishes
   useEffect(() => {
     call.camera.disable();
     call.microphone.disable();
   }, [call]);
 
-  async function acceptCall() {
-    setAccepted(true);
+  // 👀 Caller presence (now WORKS)
+  const hasCaller = participants.some((p) => !p.isLocal);
 
-    // Join WITHOUT media
-    await call.join({
-      create: false,
-      video: false,
-      audio: false,
-    });
-  }
-
-  // ✅ pick ONLY remote participant WITH video
-  const remote = participants.find(
-    (p) => !p.isLocal && p.videoStream
-  );
+  // 🎥 Only render AFTER accept
+  const remote = accepted
+    ? participants.find((p) => !p.isLocal && p.videoStream)
+    : null;
 
   useEffect(() => {
     if (remote?.videoStream && videoRef.current) {
@@ -73,10 +71,11 @@ function HostInner({ call, accepted, setAccepted }) {
   }, [remote]);
 
   if (!accepted) {
-    const hasCaller = participants.some((p) => !p.isLocal);
-
     return (
-      <button onClick={acceptCall} disabled={!hasCaller}>
+      <button
+        onClick={() => setAccepted(true)}
+        disabled={!hasCaller}
+      >
         {hasCaller ? "✅ Accept Call" : "Waiting for call…"}
       </button>
     );
