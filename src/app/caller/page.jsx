@@ -5,6 +5,7 @@ import {
   StreamVideo,
   StreamCall,
   useCall,
+  ParticipantView,
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/stream";
 
@@ -21,6 +22,9 @@ export default function CallerPage() {
       setCall(c.call("default", "room-1"));
     })();
   }, []);
+
+  const local = participants.find(p => p.isLocal);
+
 
   if (!client || !call) return <p>Loading caller…</p>;
 
@@ -70,6 +74,11 @@ function CallerInner({ call, calling, setCalling }) {
             muted
             style={{ width: 400, background: "black" }}
           />
+
+           <ParticipantView
+              participant={local}
+              style={{ width: 260, height: 180 }}
+            />
         </>
       )}
     </div>
