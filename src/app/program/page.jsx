@@ -49,18 +49,17 @@ function ProgramInner() {
   const { useParticipants } = useCallStateHooks();
   const participants = useParticipants();
 
-  // 🔴 NEVER allow local devices on Program
   useEffect(() => {
     call.camera.disable();
     call.microphone.disable();
   }, [call]);
 
-  // ✅ First REMOTE participant
-  const firstRemote = participants.find(
-    (p) => !p.isLocal
+  // ✅ FIRST CALLER (NOT HOST)
+  const firstCaller = participants.find(
+    (p) => !p.isLocal && p.userId !== "host"
   );
 
-  if (!firstRemote) {
+  if (!firstCaller) {
     return (
       <div
         style={{
@@ -72,14 +71,14 @@ function ProgramInner() {
           placeItems: "center",
         }}
       >
-        Waiting for participant…
+        Waiting for caller…
       </div>
     );
   }
 
   return (
     <ParticipantView
-      participant={firstRemote}
+      participant={firstCaller}
       style={{
         width: "100vw",
         height: "100vh",
