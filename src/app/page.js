@@ -20,12 +20,8 @@ export default function HostPage() {
       const c = await createStreamClient(userId);
       const call = c.call("default", "room-1");
 
-      // Host joins immediately (no media)
-      await call.join({
-        create: false,
-        video: false,
-        audio: false,
-      });
+      // Host joins early (no media)
+      await call.join({ video: false, audio: false });
 
       setClient(c);
       setCall(call);
@@ -45,15 +41,14 @@ export default function HostPage() {
 
 function HostInner() {
   const call = useCall();
-  const { useParticipants } = useCallStateHooks();
+  const { useParticipants, useCallCustomData } = useCallStateHooks();
   const participants = useParticipants();
+  const custom = useCallCustomData();
 
   const [accepted, setAccepted] = useState(false);
 
-  // Enable / disable host media
+  // Enable host camera only after accept
   useEffect(() => {
-    if (!call) return;
-
     if (!accepted) {
       call.camera.disable();
       call.microphone.disable();
@@ -65,21 +60,20 @@ function HostInner() {
 
   const local = participants.find(p => p.isLocal);
   const callers = participants.filter(p => !p.isLocal);
-
   const hasCaller = callers.length > 0;
 
-  // BEFORE ACCEPT
+  async function takeLive(userId) {
+    // 🔴 Set shared LIVE state
+    await call.updateCustomData({ liveUserId: userId });
+  }
+
   if (!accepted) {
     return (
       <div style={{ padding: 20 }}>
         <h1>🎧 Host</h1>
-
-        <p>Incoming callers: {callers.length}</p>
-
         <button
-          onClick={() => setAccepted(true)}
           disabled={!hasCaller}
-          style={{ padding: "10px 16px", fontSize: 16 }}
+          onClick={() => setAccepted(true)}
         >
           {hasCaller ? "✅ Accept Call" : "Waiting for call…"}
         </button>
@@ -87,32 +81,47 @@ function HostInner() {
     );
   }
 
-  // AFTER ACCEPT
   return (
     <div style={{ padding: 20 }}>
-      <h1>🎥 Host + Callers</h1>
+      <h1>🎥 Host Control</h1>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
-        {/* HOST SELF */}
+        {/* Host self preview */}
         {local && (
           <div>
             <p>Host (You)</p>
             <ParticipantView
               participant={local}
               muted
-              style={{ width: 300, height: 220 }}
+              style={{ width: 260, height: 180 }}
             />
           </div>
         )}
 
-        {/* ALL CALLERS */}
-        {callers.map((caller) => (
+        {/* Callers */}
+        {callers.map(caller => (
           <div key={caller.sessionId}>
             <p>{caller.userId}</p>
             <ParticipantView
               participant={caller}
-              style={{ width: 300, height: 220 }}
+              style={{ width: 260, height: 180 }}
             />
+
+            <button
+              onClick={() => takeLive(caller.userId)}
+              style={{
+                marginTop: 6,
+                background:
+                  custom?.liveUserId === caller.userId
+                    ? "red"
+                    : "#333",
+                color: "white",
+              }}
+            >
+              {custom?.liveUserId === caller.userId
+                ? "🔴 LIVE"
+                : "TAKE LIVE"}
+            </button>
           </div>
         ))}
       </div>
