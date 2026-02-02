@@ -48,20 +48,16 @@ function ProgramInner() {
   const call = useCall();
   const { useParticipants } = useCallStateHooks();
   const participants = useParticipants();
-const custom = useCallCustomData();
-
 
   useEffect(() => {
     call.camera.disable();
     call.microphone.disable();
   }, [call]);
 
-
-const liveUserId = custom?.liveUserId;
-
-const liveCaller = participants.find(
-  (p) => p.userId === liveUserId
-);
+  // ✅ FIRST CALLER (NOT HOST)
+  const firstCaller = participants.find(
+    (p) => !p.isLocal && p.userId !== "host"
+  );
 
   if (!firstCaller) {
     return (
@@ -79,25 +75,10 @@ const liveCaller = participants.find(
       </div>
     );
   }
-if (!liveCaller) {
-  return (
-    <div
-      style={{
-        width: "100vw",
-        height: "100vh",
-        background: "black",
-        color: "white",
-        display: "grid",
-        placeItems: "center",
-      }}
-    >
-      Waiting for LIVE selection…
-    </div>
-  );
-}
+
   return (
     <ParticipantView
-      participant={liveCaller}
+      participant={firstCaller}
       style={{
         width: "100vw",
         height: "100vh",

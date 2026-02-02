@@ -39,47 +39,22 @@ export default function HostPage() {
 function HostUI({ call }) {
   const { useParticipants } = useCallStateHooks();
   const participants = useParticipants();
-const custom = useCallCustomData();
 
-const callers = participants.filter(
-  (p) => !p.isLocal && p.userId !== "host"
-);
-
-async function takeLive(userId) {
-  await call.updateCustomData({
-    liveUserId: userId,
-  });
-}
   return (
     <div style={{ padding: 16 }}>
       <h1>🎬 Host Control Room</h1>
 
-     {callers.map((caller) => (
-  <div key={caller.sessionId}>
-    <ParticipantView
-      participant={caller}
-      style={{ width: 260, height: 180 }}
-    />
-
-    <button
-      onClick={() => takeLive(caller.userId)}
-      style={{
-        marginTop: 6,
-        background:
-          custom?.liveUserId === caller.userId
-            ? "red"
-            : "#333",
-        color: "white",
-        padding: "6px 10px",
-      }}
-    >
-      {custom?.liveUserId === caller.userId
-        ? "🔴 LIVE"
-        : "TAKE LIVE"}
-    </button>
-  </div>
-))}
-
+      {participants.map((p) => (
+        <div key={p.sessionId} style={{ marginBottom: 10 }}>
+          <span>{p.userId}</span>
+          <button
+            style={{ marginLeft: 10 }}
+            onClick={() => setLiveParticipant(call, p.userId)}
+          >
+            TAKE LIVE
+          </button>
+        </div>
+      ))}
 
       <CallControls />
     </div>
