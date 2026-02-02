@@ -9,7 +9,7 @@ import {
 import { createStreamClient } from "@/lib/stream";
 
 export default function ReceiverPage() {
-  const userId = "receiver";
+  const userId = "receiver"; // control-only user
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
 
@@ -18,11 +18,16 @@ export default function ReceiverPage() {
       const c = await createStreamClient(userId);
       const call = c.call("default", "room-1");
 
-      // 👇 IMPORTANT: no camera, no mic
+      // 🔴 Join WITHOUT camera or mic
       await call.join({
+        create: false,
         video: false,
         audio: false,
       });
+
+      // 🔴 FORCE disable local devices
+      await call.camera.disable();
+      await call.microphone.disable();
 
       setClient(c);
       setCall(call);
@@ -34,18 +39,18 @@ export default function ReceiverPage() {
   return (
     <StreamVideo client={client}>
       <StreamCall call={call}>
-        <RemoteVideo />
+        <RemoteOnlyVideo />
       </StreamCall>
     </StreamVideo>
   );
 }
 
-function RemoteVideo() {
+function RemoteOnlyVideo() {
   const videoRef = useRef(null);
   const { useParticipants } = useCallStateHooks();
   const participants = useParticipants();
 
-  // pick first remote participant
+  // ✅ ONLY remote participants
   const remote = participants.find((p) => !p.isLocal);
 
   useEffect(() => {
@@ -54,7 +59,9 @@ function RemoteVideo() {
     }
   }, [remote]);
 
-  if (!remote) return <h2>No caller yet…</h2>;
+  if (!remote) {
+    return <h2>No caller yet…</h2>;
+  }
 
   return (
     <video
@@ -65,7 +72,7 @@ function RemoteVideo() {
       style={{
         width: "100vw",
         height: "100vh",
-        // background: "black",
+        background: "black",
       }}
     />
   );
