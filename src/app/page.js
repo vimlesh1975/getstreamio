@@ -9,7 +9,7 @@ import {
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/stream";
 
-export default function ReceiverPage() {
+export default function HostPage() {
   const userId = "receiver";
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
@@ -19,13 +19,13 @@ export default function ReceiverPage() {
       const c = await createStreamClient(userId);
       const call = c.call("default", "room-1");
 
-      // 🚫 Join WITHOUT camera/mic
+      // 🚫 NEVER publish from host
       await call.join({
         create: false,
         video: false,
         audio: false,
       });
-console.log("Receiver joined call");
+
       setClient(c);
       setCall(call);
     })();
@@ -36,21 +36,18 @@ console.log("Receiver joined call");
   return (
     <StreamVideo client={client}>
       <StreamCall call={call}>
-         <ParticipantLogger />
-  <RemoteOnlyVideo />
+        <HostInner />
       </StreamCall>
     </StreamVideo>
   );
 }
 
-/* 🔴 THIS is where we force-disable local media */
-function ReceiverInner() {
+function HostInner() {
   const call = useCall();
 
+  // 🔒 HARD LOCK: host cannot publish
   useEffect(() => {
     if (!call) return;
-
-    // 🚫 FORCE disable local devices AFTER mount
     call.camera.disable();
     call.microphone.disable();
   }, [call]);
@@ -63,20 +60,18 @@ function RemoteOnlyVideo() {
   const { useParticipants } = useCallStateHooks();
   const participants = useParticipants();
 
-  // 🔴 FILTER OUT LOCAL PARTICIPANT
+  // 🔴 ONLY remote participants WITH video
   const remote = participants.find(
-    (p) => !p.isLocal && p.videoStream
+    p => !p.isLocal && p.videoStream
   );
 
   useEffect(() => {
-    if (remote?.videoStream && videoRef.current) {
+    if (remote && videoRef.current) {
       videoRef.current.srcObject = remote.videoStream;
     }
   }, [remote]);
 
-  if (!remote) {
-    return <h2>No remote caller video yet…</h2>;
-  }
+  if (!remote) return <h2>No remote video yet…</h2>;
 
   return (
     <video
@@ -84,42 +79,7 @@ function RemoteOnlyVideo() {
       autoPlay
       playsInline
       muted
-      style={{
-        width: "100vw",
-        height: "100vh",
-        background: "black",
-      }}
+      style={{ width: "100vw", height: "100vh", background: "black" }}
     />
   );
-}
-
-
-function ParticipantLogger() {
-  const { useParticipants } = useCallStateHooks();
-  const participants = useParticipants();
-
-  const prevIdsRef = useRef([]);
-
-  useEffect(() => {
-    const currentIds = participants.map((p) => p.userId);
-    const prevIds = prevIdsRef.current;
-
-    // Joined
-    currentIds.forEach((id) => {
-      if (!prevIds.includes(id)) {
-        console.log("Participant joined:", id);
-      }
-    });
-
-    // Left
-    prevIds.forEach((id) => {
-      if (!currentIds.includes(id)) {
-        console.log("Participant left:", id);
-      }
-    });
-
-    prevIdsRef.current = currentIds;
-  }, [participants]);
-
-  return null;
 }
