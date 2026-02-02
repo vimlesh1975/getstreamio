@@ -36,7 +36,8 @@ console.log("Receiver joined call");
   return (
     <StreamVideo client={client}>
       <StreamCall call={call}>
-        <ReceiverInner />
+         <ParticipantLogger />
+  <RemoteOnlyVideo />
       </StreamCall>
     </StreamVideo>
   );
@@ -88,4 +89,35 @@ function RemoteOnlyVideo() {
       }}
     />
   );
+}
+
+
+function ParticipantLogger() {
+  const { useParticipants } = useCallStateHooks();
+  const participants = useParticipants();
+
+  const prevIdsRef = useRef([]);
+
+  useEffect(() => {
+    const currentIds = participants.map((p) => p.userId);
+    const prevIds = prevIdsRef.current;
+
+    // Joined
+    currentIds.forEach((id) => {
+      if (!prevIds.includes(id)) {
+        console.log("Participant joined:", id);
+      }
+    });
+
+    // Left
+    prevIds.forEach((id) => {
+      if (!currentIds.includes(id)) {
+        console.log("Participant left:", id);
+      }
+    });
+
+    prevIdsRef.current = currentIds;
+  }, [participants]);
+
+  return null;
 }
