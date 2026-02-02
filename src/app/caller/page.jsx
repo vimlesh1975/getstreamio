@@ -36,20 +36,23 @@ export default function CallerPage() {
 function CallerInner({ call, calling, setCalling }) {
   const videoRef = useRef(null);
 
-  async function startCall() {
-    setCalling(true);
+ async function startCall() {
+  setCalling(true);
 
-    // Join call
-    await call.join({ create: true });
+  // 🔴 JOIN WITH VIDEO ENABLED
+  await call.join({
+    create: true,
+    video: true,
+    audio: false,
+  });
 
-    // Enable camera explicitly
-    await call.camera.enable();
-
-    // Show self preview
-    if (call.camera.state.mediaStream && videoRef.current) {
-      videoRef.current.srcObject = call.camera.state.mediaStream;
-    }
+  // attach preview so caller can see self
+  if (call.camera.state.mediaStream && videoRef.current) {
+    videoRef.current.srcObject =
+      call.camera.state.mediaStream;
   }
+}
+
 
   return (
     <div style={{ padding: 20 }}>
