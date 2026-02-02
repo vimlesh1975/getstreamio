@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   StreamVideo,
   StreamCall,
+  useCall,
   useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/stream";
@@ -17,39 +18,53 @@ export default function ReceiverPage() {
   useEffect(() => {
     (async () => {
       const c = await createStreamClient(userId);
+      const call = c.call("default", "room-1");
       setClient(c);
-      setCall(c.call("default", "room-1"));
+      setCall(call);
     })();
   }, []);
 
-  if (!client || !call) return <p>Loading receiver…</p>;
+  if (!client || !call) return <p>Loading…</p>;
 
   return (
     <StreamVideo client={client}>
       <StreamCall call={call}>
-        <ReceiverInner call={call} accepted={accepted} setAccepted={setAccepted} />
+        <HostInner
+          call={call}
+          accepted={accepted}
+          setAccepted={setAccepted}
+        />
       </StreamCall>
     </StreamVideo>
   );
 }
 
-function ReceiverInner({ call, accepted, setAccepted }) {
+function HostInner({ call, accepted, setAccepted }) {
   const videoRef = useRef(null);
   const { useParticipants } = useCallStateHooks();
   const participants = useParticipants();
 
+  // 🔴 HARD RULE: host never publishes
+  useEffect(() => {
+    call.camera.disable();
+    call.microphone.disable();
+  }, [call]);
+
   async function acceptCall() {
     setAccepted(true);
 
-    // Join WITHOUT camera
-    await call.join({ create: false });
-
-    // Make sure host never publishes
-    await call.camera.disable();
-    await call.microphone.disable();
+    // Join WITHOUT media
+    await call.join({
+      create: false,
+      video: false,
+      audio: false,
+    });
   }
 
-  const remote = participants.find(p => !p.isLocal && p.videoStream);
+  // ✅ pick ONLY remote participant WITH video
+  const remote = participants.find(
+    (p) => !p.isLocal && p.videoStream
+  );
 
   useEffect(() => {
     if (remote?.videoStream && videoRef.current) {
@@ -57,23 +72,31 @@ function ReceiverInner({ call, accepted, setAccepted }) {
     }
   }, [remote]);
 
-  return (
-    <div style={{ padding: 20 }}>
-      <h1>🎧 Receiver</h1>
+  if (!accepted) {
+    const hasCaller = participants.some((p) => !p.isLocal);
 
-      {!accepted ? (
-        <button onClick={acceptCall}>✅ Accept Call</button>
-      ) : remote ? (
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          style={{ width: "100vw", height: "100vh", background: "black" }}
-        />
-      ) : (
-        <p>Waiting for caller video…</p>
-      )}
-    </div>
+    return (
+      <button onClick={acceptCall} disabled={!hasCaller}>
+        {hasCaller ? "✅ Accept Call" : "Waiting for call…"}
+      </button>
+    );
+  }
+
+  if (!remote) {
+    return <h2>Waiting for caller video…</h2>;
+  }
+
+  return (
+    <video
+      ref={videoRef}
+      autoPlay
+      playsInline
+      muted
+      style={{
+        width: "100vw",
+        height: "100vh",
+        background: "black",
+      }}
+    />
   );
 }
