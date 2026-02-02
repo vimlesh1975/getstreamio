@@ -5,6 +5,7 @@ import {
   StreamVideo,
   StreamCall,
   ParticipantView,
+  useCall,
   useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/stream";
@@ -19,8 +20,11 @@ export default function ProgramPage() {
       const c = await createStreamClient(userId);
       const call = c.call("default", "room-1");
 
-      // Program joins silently (no camera)
-      await call.join({ video: false, audio: false });
+      // ✅ Program joins silently
+      await call.join({
+        video: false,
+        audio: false,
+      });
 
       setClient(c);
       setCall(call);
@@ -39,13 +43,20 @@ export default function ProgramPage() {
 }
 
 function ProgramInner() {
+  const call = useCall();
   const { useParticipants, useCallCustomData } = useCallStateHooks();
   const participants = useParticipants();
   const custom = useCallCustomData();
 
+  // 🔴 ABSOLUTELY CRITICAL: disable local devices
+  useEffect(() => {
+    call.camera.disable();
+    call.microphone.disable();
+  }, [call]);
+
   const liveUserId = custom?.liveUserId;
   const live = participants.find(
-    p => p.userId === liveUserId
+    (p) => p.userId === liveUserId
   );
 
   if (!live) {
@@ -54,10 +65,10 @@ function ProgramInner() {
         style={{
           width: "100vw",
           height: "100vh",
-          display: "grid",
-          placeItems: "center",
           background: "black",
           color: "white",
+          display: "grid",
+          placeItems: "center",
         }}
       >
         Waiting for LIVE source…
