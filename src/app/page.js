@@ -1,47 +1,72 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  StreamVideo,
+  StreamCall,
+  useCallStateHooks,
+} from "@stream-io/video-react-sdk";
+import { createStreamClient } from "@/lib/stream";
 
-export default function HomePage() {
-  const [name, setName] = useState("");
-  const router = useRouter();
+export default function ReceiverPage() {
+  const userId = "receiver";
+  const [client, setClient] = useState(null);
+  const [call, setCall] = useState(null);
 
+  useEffect(() => {
+    (async () => {
+      const c = await createStreamClient(userId);
+      const call = c.call("default", "room-1");
 
-  async function startRTMP() {
-  await fetch("/api/start-rtmp", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      callId: "room-1",
-      rtmpUrl: "rtmp://localhost/live",
-      streamKey: "stream",
-    }),
-  });
+      // 👇 IMPORTANT: no camera, no mic
+      await call.join({
+        video: false,
+        audio: false,
+      });
 
-  alert("RTMP started");
-}
+      setClient(c);
+      setCall(call);
+    })();
+  }, []);
 
+  if (!client || !call) return <p>Waiting for caller…</p>;
 
   return (
-    <main style={{ padding: 40 }}>
-      <h1>Stream Zoom Clone (JSX)</h1>
+    <StreamVideo client={client}>
+      <StreamCall call={call}>
+        <RemoteVideo />
+      </StreamCall>
+    </StreamVideo>
+  );
+}
 
-      <input
-        placeholder="Enter your name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
+function RemoteVideo() {
+  const videoRef = useRef(null);
+  const { useParticipants } = useCallStateHooks();
+  const participants = useParticipants();
 
-      <button
-        onClick={() => router.push(`/call?user=${name || "guest"}`)}
-        style={{ marginLeft: 10 }}
-      >
-        Join Call
-      </button>
+  // pick first remote participant
+  const remote = participants.find((p) => !p.isLocal);
 
-      <button onClick={startRTMP}>Start Broadcast</button>
+  useEffect(() => {
+    if (remote?.videoStream && videoRef.current) {
+      videoRef.current.srcObject = remote.videoStream;
+    }
+  }, [remote]);
 
-    </main>
+  if (!remote) return <h2>No caller yet…</h2>;
+
+  return (
+    <video
+      ref={videoRef}
+      autoPlay
+      playsInline
+      muted
+      style={{
+        width: "100vw",
+        height: "100vh",
+        // background: "black",
+      }}
+    />
   );
 }
