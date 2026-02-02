@@ -20,7 +20,7 @@ export default function HostPage() {
       const c = await createStreamClient(userId);
       const call = c.call("default", "room-1");
 
-      // Host joins immediately (no media published)
+      // Host joins immediately (no media)
       await call.join({
         create: false,
         video: false,
@@ -50,7 +50,7 @@ function HostInner() {
 
   const [accepted, setAccepted] = useState(false);
 
-  // Enable / disable host camera
+  // Enable / disable host media
   useEffect(() => {
     if (!call) return;
 
@@ -63,15 +63,18 @@ function HostInner() {
     }
   }, [call, accepted]);
 
-  const hasCaller = participants.some(p => !p.isLocal);
-
   const local = participants.find(p => p.isLocal);
-  const remote = participants.find(p => !p.isLocal);
+  const callers = participants.filter(p => !p.isLocal);
 
+  const hasCaller = callers.length > 0;
+
+  // BEFORE ACCEPT
   if (!accepted) {
     return (
       <div style={{ padding: 20 }}>
         <h1>🎧 Host</h1>
+
+        <p>Incoming callers: {callers.length}</p>
 
         <button
           onClick={() => setAccepted(true)}
@@ -84,27 +87,34 @@ function HostInner() {
     );
   }
 
+  // AFTER ACCEPT
   return (
     <div style={{ padding: 20 }}>
-      <h1>🎥 Host + Caller</h1>
+      <h1>🎥 Host + Callers</h1>
 
-      <div style={{ display: "flex", gap: 20 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
+        {/* HOST SELF */}
         {local && (
-          <ParticipantView
-            participant={local}
-            muted
-            style={{ width: 400, height: 300 }}
-          />
+          <div>
+            <p>Host (You)</p>
+            <ParticipantView
+              participant={local}
+              muted
+              style={{ width: 300, height: 220 }}
+            />
+          </div>
         )}
 
-        {remote ? (
-          <ParticipantView
-            participant={remote}
-            style={{ width: 400, height: 300 }}
-          />
-        ) : (
-          <p>Waiting for caller video…</p>
-        )}
+        {/* ALL CALLERS */}
+        {callers.map((caller) => (
+          <div key={caller.sessionId}>
+            <p>{caller.userId}</p>
+            <ParticipantView
+              participant={caller}
+              style={{ width: 300, height: 220 }}
+            />
+          </div>
+        ))}
       </div>
     </div>
   );
