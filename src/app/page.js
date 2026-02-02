@@ -4,12 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import {
   StreamVideo,
   StreamCall,
+  useCall,
   useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/stream";
 
 export default function ReceiverPage() {
-  const userId = "receiver"; // control-only user
+  const userId = "receiver";
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
 
@@ -18,17 +19,13 @@ export default function ReceiverPage() {
       const c = await createStreamClient(userId);
       const call = c.call("default", "room-1");
 
-      // 🔴 Join WITHOUT camera or mic
+      // 🚫 Join WITHOUT camera/mic
       await call.join({
         create: false,
         video: false,
         audio: false,
       });
-
-      // 🔴 FORCE disable local devices
-      await call.camera.disable();
-      await call.microphone.disable();
-
+console.log("Receiver joined call");
       setClient(c);
       setCall(call);
     })();
@@ -39,10 +36,25 @@ export default function ReceiverPage() {
   return (
     <StreamVideo client={client}>
       <StreamCall call={call}>
-        <RemoteOnlyVideo />
+        <ReceiverInner />
       </StreamCall>
     </StreamVideo>
   );
+}
+
+/* 🔴 THIS is where we force-disable local media */
+function ReceiverInner() {
+  const call = useCall();
+
+  useEffect(() => {
+    if (!call) return;
+
+    // 🚫 FORCE disable local devices AFTER mount
+    call.camera.disable();
+    call.microphone.disable();
+  }, [call]);
+
+  return <RemoteOnlyVideo />;
 }
 
 function RemoteOnlyVideo() {
@@ -72,7 +84,7 @@ function RemoteOnlyVideo() {
       style={{
         width: "100vw",
         height: "100vh",
-        background: "black",
+        // background: "black",
       }}
     />
   );

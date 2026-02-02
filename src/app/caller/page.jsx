@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   StreamVideo,
   StreamCall,
-  CallControls,
+  useCall,
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/stream";
 
@@ -18,10 +18,11 @@ export default function CallerPage() {
       const c = await createStreamClient(userId);
       const call = c.call("default", "room-1");
 
+      // Join call (do NOT rely on auto camera)
       await call.join({
         create: true,
-        video: true,
-        audio: true,
+        video: false,
+        audio: false,
       });
 
       setClient(c);
@@ -34,9 +35,55 @@ export default function CallerPage() {
   return (
     <StreamVideo client={client}>
       <StreamCall call={call}>
-        <h1>📞 Caller</h1>
-        <CallControls />
+        <CallerInner />
       </StreamCall>
     </StreamVideo>
+  );
+}
+
+function CallerInner() {
+  const call = useCall();
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    if (!call) return;
+
+    async function enableCamera() {
+      try {
+        // 🔴 Explicitly enable camera & mic
+        await call.camera.enable();
+        await call.microphone.enable();
+
+        // Attach local preview
+        if (call.camera.state.mediaStream && videoRef.current) {
+          videoRef.current.srcObject =
+            call.camera.state.mediaStream;
+        }
+      } catch (err) {
+        console.error("Camera enable failed", err);
+      }
+    }
+
+    enableCamera();
+  }, [call]);
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h1>📞 Caller</h1>
+
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        style={{
+          width: 400,
+          height: 300,
+          background: "black",
+        }}
+      />
+
+      <p>If you see yourself here, camera is ON.</p>
+    </div>
   );
 }
