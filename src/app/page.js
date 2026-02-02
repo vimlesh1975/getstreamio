@@ -63,8 +63,10 @@ function RemoteOnlyVideo() {
   const { useParticipants } = useCallStateHooks();
   const participants = useParticipants();
 
-  // ✅ ONLY remote participants
-  const remote = participants.find((p) => !p.isLocal);
+  // 🔴 FILTER OUT LOCAL PARTICIPANT
+  const remote = participants.find(
+    (p) => !p.isLocal && p.videoStream
+  );
 
   useEffect(() => {
     if (remote?.videoStream && videoRef.current) {
@@ -73,7 +75,7 @@ function RemoteOnlyVideo() {
   }, [remote]);
 
   if (!remote) {
-    return <h2>No caller yet…</h2>;
+    return <h2>No remote caller video yet…</h2>;
   }
 
   return (
@@ -85,7 +87,7 @@ function RemoteOnlyVideo() {
       style={{
         width: "100vw",
         height: "100vh",
-        // background: "black",
+        background: "black",
       }}
     />
   );
