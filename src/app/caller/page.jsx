@@ -5,7 +5,6 @@ import {
   StreamVideo,
   StreamCall,
   ParticipantView,
-  useCall,
   useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/stream";
@@ -16,7 +15,7 @@ export default function CallerPage() {
 
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
-  const [calling, setCalling] = useState(false);
+  const [joined, setJoined] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -37,15 +36,15 @@ export default function CallerPage() {
       <StreamCall call={call}>
         <CallerInner
           call={call}
-          calling={calling}
-          setCalling={setCalling}
+          joined={joined}
+          setJoined={setJoined}
         />
       </StreamCall>
     </StreamVideo>
   );
 }
 
-function CallerInner({ call, calling, setCalling }) {
+function CallerInner({ call, joined, setJoined }) {
   const { useParticipants } = useCallStateHooks();
   const participants = useParticipants();
 
@@ -55,21 +54,21 @@ function CallerInner({ call, calling, setCalling }) {
   );
 
   async function startCall() {
-    setCalling(true);
-
-    // 🔴 Join call WITH video (publish camera)
+    // 🔴 JOIN FIRST
     await call.join({
       create: true,
       video: true,
       audio: true,
     });
+
+    // ✅ Only now allow rendering
+    setJoined(true);
   }
 
-  return (
-    <div style={{ padding: 20 }}>
-      <h1>📞 Caller</h1>
-
-      {!calling && (
+  if (!joined) {
+    return (
+      <div style={{ padding: 20 }}>
+        <h1>📞 Caller</h1>
         <button
           onClick={startCall}
           style={{
@@ -80,44 +79,50 @@ function CallerInner({ call, calling, setCalling }) {
         >
           📲 Call
         </button>
-      )}
+      </div>
+    );
+  }
 
-      {calling && (
-        <div style={{ display: "flex", gap: 20, marginTop: 20 }}>
-          {/* HOST VIDEO */}
-          <div>
-            <p>Host</p>
-            {host ? (
-              <ParticipantView
-                participant={host}
-                style={{
-                  width: 400,
-                  height: 300,
-                  background: "black",
-                }}
-              />
-            ) : (
-              <p>Waiting for host…</p>
-            )}
-          </div>
+  return (
+    <div style={{ padding: 20 }}>
+      <h1>📞 Caller</h1>
 
-          {/* SELF PREVIEW */}
-          <div>
-            <p>You</p>
-            {self && (
-              <ParticipantView
-                participant={self}
-                muted
-                style={{
-                  width: 200,
-                  height: 150,
-                  background: "black",
-                }}
-              />
-            )}
-          </div>
+      <div style={{ display: "flex", gap: 20 }}>
+        {/* HOST VIDEO */}
+        <div>
+          <p>Host</p>
+          {host ? (
+            <ParticipantView
+              participant={host}
+              style={{
+                width: 400,
+                height: 300,
+                background: "black",
+              }}
+            />
+          ) : (
+            <p>Waiting for host…</p>
+          )}
         </div>
-      )}
+
+        {/* SELF PREVIEW */}
+        <div>
+          <p>You</p>
+          {self ? (
+            <ParticipantView
+              participant={self}
+              muted
+              style={{
+                width: 200,
+                height: 150,
+                background: "black",
+              }}
+            />
+          ) : (
+            <p>Starting camera…</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
