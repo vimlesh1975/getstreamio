@@ -20,7 +20,7 @@ export default function ProgramPage() {
       const c = await createStreamClient(userId);
       const call = c.call("default", "room-1");
 
-      // ✅ Program joins silently
+      // ✅ Join silently (viewer only)
       await call.join({
         video: false,
         audio: false,
@@ -31,7 +31,9 @@ export default function ProgramPage() {
     })();
   }, []);
 
-  if (!client || !call) return <p>Loading program…</p>;
+  if (!client || !call) {
+    return <p>Loading program…</p>;
+  }
 
   return (
     <StreamVideo client={client}>
@@ -44,22 +46,21 @@ export default function ProgramPage() {
 
 function ProgramInner() {
   const call = useCall();
-  const { useParticipants, useCallCustomData } = useCallStateHooks();
+  const { useParticipants } = useCallStateHooks();
   const participants = useParticipants();
-  const custom = useCallCustomData();
 
-  // 🔴 ABSOLUTELY CRITICAL: disable local devices
+  // 🔴 NEVER allow local devices on Program
   useEffect(() => {
     call.camera.disable();
     call.microphone.disable();
   }, [call]);
 
-  const liveUserId = custom?.liveUserId;
-  const live = participants.find(
-    (p) => p.userId === liveUserId
+  // ✅ First REMOTE participant
+  const firstRemote = participants.find(
+    (p) => !p.isLocal
   );
 
-  if (!live) {
+  if (!firstRemote) {
     return (
       <div
         style={{
@@ -71,14 +72,14 @@ function ProgramInner() {
           placeItems: "center",
         }}
       >
-        Waiting for LIVE source…
+        Waiting for participant…
       </div>
     );
   }
 
   return (
     <ParticipantView
-      participant={live}
+      participant={firstRemote}
       style={{
         width: "100vw",
         height: "100vh",
