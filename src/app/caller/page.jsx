@@ -12,64 +12,63 @@ export default function CallerPage() {
   const userId = "caller-" + Math.random().toString(36).slice(2, 7);
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
+  const [calling, setCalling] = useState(false);
 
   useEffect(() => {
     (async () => {
       const c = await createStreamClient(userId);
-      const call = c.call("default", "room-1");
-
-      await call.join({
-        create: true,
-        video: false,
-        audio: false,
-      });
-
       setClient(c);
-      setCall(call);
+      setCall(c.call("default", "room-1"));
     })();
   }, []);
 
-  if (!client || !call) return <p>Joining…</p>;
+  if (!client || !call) return <p>Loading caller…</p>;
 
   return (
     <StreamVideo client={client}>
       <StreamCall call={call}>
-        <CallerInner />
+        <CallerInner call={call} calling={calling} setCalling={setCalling} />
       </StreamCall>
     </StreamVideo>
   );
 }
 
-function CallerInner() {
-  const call = useCall();
+function CallerInner({ call, calling, setCalling }) {
   const videoRef = useRef(null);
 
-  useEffect(() => {
-    if (!call) return;
+  async function startCall() {
+    setCalling(true);
 
-    async function startCamera() {
-      await call.camera.enable();
+    // Join call
+    await call.join({ create: true });
 
-      // attach preview so you SEE it's on
-      if (call.camera.state.mediaStream && videoRef.current) {
-        videoRef.current.srcObject =
-          call.camera.state.mediaStream;
-      }
+    // Enable camera explicitly
+    await call.camera.enable();
+
+    // Show self preview
+    if (call.camera.state.mediaStream && videoRef.current) {
+      videoRef.current.srcObject = call.camera.state.mediaStream;
     }
-
-    startCamera();
-  }, [call]);
+  }
 
   return (
-    <>
-      <h2>Caller camera (you should see yourself)</h2>
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted
-        style={{ width: 400, height: 300, background: "black" }}
-      />
-    </>
+    <div style={{ padding: 20 }}>
+      <h1>📞 Caller</h1>
+
+      {!calling ? (
+        <button onClick={startCall}>📲 Call</button>
+      ) : (
+        <>
+          <p>Calling…</p>
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            style={{ width: 400, background: "black" }}
+          />
+        </>
+      )}
+    </div>
   );
 }
