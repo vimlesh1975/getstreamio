@@ -40,22 +40,27 @@ export default function ProgramPage() {
 
 function ProgramInner() {
   const call = useCall();
-  const { useParticipants } = useCallStateHooks();
+  const { useParticipants, useCallCustomData  } = useCallStateHooks();
   const participants = useParticipants();
+const custom = useCallCustomData();
 
   useEffect(() => {
     call.camera.disable();
     call.microphone.disable();
   }, [call]);
 
-  // const firstCaller = participants.find(
-  //   (p) => !p.isLocal && p.userId !== "host"
-  // );
-
     const callers = participants.filter(
     (p) => !p.isLocal && p.userId !== "host"
   );
+const liveIndex =
+  typeof custom?.liveIndex === "number"
+    ? custom.liveIndex
+    : 0;
 
+    const safeIndex = Math.min(
+  liveIndex,
+  callers.length - 1
+);
 
   return (
     <>
@@ -111,7 +116,7 @@ function ProgramInner() {
           Waiting for caller…
         </div>
       ) : (
-        <ParticipantView participant={callers[0]} />
+        <ParticipantView participant={callers[safeIndex]} />
       )}
     </>
   );
