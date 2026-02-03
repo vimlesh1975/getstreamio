@@ -7,6 +7,7 @@ import {
   ParticipantView,
   useCall,
   useCallStateHooks,
+
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/stream";
 
@@ -14,6 +15,7 @@ export default function HostPage() {
   const userId = "host";
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
+
 
   useEffect(() => {
     (async () => {
@@ -43,7 +45,6 @@ function HostInner() {
   const call = useCall();
   const { useParticipants, useCallCustomData } = useCallStateHooks();
   const participants = useParticipants();
-  const custom = useCallCustomData();
 
   const [accepted, setAccepted] = useState(false);
 
@@ -70,11 +71,7 @@ function HostInner() {
   }, [call, accepted]);
 
   const local = participants.find(p => p.isLocal);
-  // const callers = participants.filter(p => !p.isLocal);
-  // const callers = participants.filter(
-  //   (p) => !p.isLocal && p.userId !== "host"
-  //   // (p) => !p.isLocal && p.userId !== "host" && p.userId !== "program"
-  // );
+
   const callers = [...participants];
   const hasCaller = callers.length > 0;
 
@@ -97,20 +94,6 @@ function HostInner() {
       <h1>🎥 Host Control</h1>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
-        {/* Host self preview */}
-        {local && (
-          <div>
-            <p>Host (You)</p>
-            <ParticipantView
-              participant={local}
-              muted
-              style={{ width: 260, height: 180 }}
-            />
-          </div>
-        )}
-
-        {/* Callers */}
-
 
         {callers.map((caller, index) => (
           <div key={caller.sessionId} style={{ marginBottom: 8 }}>
