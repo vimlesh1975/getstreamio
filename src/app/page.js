@@ -71,10 +71,11 @@ function HostInner() {
 
   const local = participants.find(p => p.isLocal);
   // const callers = participants.filter(p => !p.isLocal);
-  const callers = participants.filter(
-    (p) => !p.isLocal && p.userId !== "host" && p.userId !== "program"
-  );
-
+  // const callers = participants.filter(
+  //   (p) => !p.isLocal && p.userId !== "host"
+  //   // (p) => !p.isLocal && p.userId !== "host" && p.userId !== "program"
+  // );
+  const callers = [...participants];
   const hasCaller = callers.length > 0;
 
   if (!accepted) {
@@ -124,7 +125,7 @@ function HostInner() {
               style={{ marginLeft: 10 }}
               onClick={() => setLiveIndex(index)}
             >
-              TAKE LIVE
+              TAKE LIVE {index}
             </button>
           </div>
         ))}
