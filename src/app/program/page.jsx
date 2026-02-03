@@ -86,6 +86,7 @@ function ProgramInner() {
           width: 100vw !important;
           height: 100vh !important;
           object-fit: fill !important;
+          transform: scaleX(-1) !important; /* 👈 MIRROR */
           display: block !important;
         }
       `}</style>
