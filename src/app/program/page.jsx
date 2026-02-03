@@ -48,9 +48,14 @@ function ProgramInner() {
     call.microphone.disable();
   }, [call]);
 
-  const firstCaller = participants.find(
+  // const firstCaller = participants.find(
+  //   (p) => !p.isLocal && p.userId !== "host"
+  // );
+
+    const callers = participants.filter(
     (p) => !p.isLocal && p.userId !== "host"
   );
+
 
   return (
     <>
@@ -91,7 +96,7 @@ function ProgramInner() {
         }
       `}</style>
 
-      {!firstCaller ? (
+      {callers.length === 0 ? (
         <div
           style={{
             width: "100vw",
@@ -106,7 +111,7 @@ function ProgramInner() {
           Waiting for caller…
         </div>
       ) : (
-        <ParticipantView participant={firstCaller} />
+        <ParticipantView participant={callers[0]} />
       )}
     </>
   );
