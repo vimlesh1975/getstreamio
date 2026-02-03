@@ -50,7 +50,7 @@ function ProgramInner() {
   }, [call]);
 
   const callers = participants.filter(
-    (p) => !p.isLocal && p.userId !== "host"
+    (p) => !p.isLocal
   );
   const liveIndex =
     typeof custom?.liveIndex === "number"
