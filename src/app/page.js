@@ -47,13 +47,13 @@ function HostInner() {
 
   const [accepted, setAccepted] = useState(false);
 
-async function setLiveIndex(index) {
-  await fetch("/api/set-live-index", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ liveIndex: index }),
-  });
-}
+  async function setLiveIndex(index) {
+    await fetch("/api/set-live-index", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ liveIndex: index }),
+    });
+  }
 
 
 
@@ -72,8 +72,8 @@ async function setLiveIndex(index) {
   const local = participants.find(p => p.isLocal);
   // const callers = participants.filter(p => !p.isLocal);
   const callers = participants.filter(
-  (p) => !p.isLocal && p.userId !== "host" && p.userId !== "program"
-);
+    (p) => !p.isLocal && p.userId !== "host" && p.userId !== "program"
+  );
 
   const hasCaller = callers.length > 0;
 
@@ -109,23 +109,25 @@ async function setLiveIndex(index) {
         )}
 
         {/* Callers */}
-      {callers.map((caller, index) => (
-  <div key={caller.sessionId} style={{ marginBottom: 8 }}>
-    <span>{caller.userId}</span>
-     <ParticipantView
+
+
+        {callers.map((caller, index) => (
+          <div key={caller.sessionId} style={{ marginBottom: 8 }}>
+            <span>{caller.userId}</span>
+            <ParticipantView
               participant={caller}
               muted
               style={{ width: 260, height: 180 }}
             />
 
-    <button
-      style={{ marginLeft: 10 }}
-      onClick={() => setLiveIndex(index)}
-    >
-      TAKE LIVE
-    </button>
-  </div>
-))}
+            <button
+              style={{ marginLeft: 10 }}
+              onClick={() => setLiveIndex(index)}
+            >
+              TAKE LIVE
+            </button>
+          </div>
+        ))}
 
       </div>
     </div>
