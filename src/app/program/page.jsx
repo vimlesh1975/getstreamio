@@ -20,20 +20,14 @@ export default function ProgramPage() {
       const c = await createStreamClient(userId);
       const call = c.call("default", "room-1");
 
-      // ✅ Join silently (viewer only)
-      await call.join({
-        video: false,
-        audio: false,
-      });
+      await call.join({ video: false, audio: false });
 
       setClient(c);
       setCall(call);
     })();
   }, []);
 
-  if (!client || !call) {
-    return <p>Loading program…</p>;
-  }
+  if (!client || !call) return null;
 
   return (
     <StreamVideo client={client}>
@@ -54,36 +48,65 @@ function ProgramInner() {
     call.microphone.disable();
   }, [call]);
 
-  // ✅ FIRST CALLER (NOT HOST)
   const firstCaller = participants.find(
     (p) => !p.isLocal && p.userId !== "host"
   );
 
-  if (!firstCaller) {
-    return (
-      <div
-        style={{
-          width: "100vw",
-          height: "100vh",
-          background: "black",
-          color: "white",
-          display: "grid",
-          placeItems: "center",
-        }}
-      >
-        Waiting for caller…
-      </div>
-    );
-  }
-
   return (
-    <ParticipantView
-      participant={firstCaller}
-      style={{
-        width: "100vw",
-        height: "100vh",
-        background: "black",
-      }}
-    />
+    <>
+      {/* 🔴 ABSOLUTE OVERRIDE — ALL STREAM WRAPPERS */}
+      <style jsx global>{`
+        html,
+        body,
+        #__next {
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          overflow: hidden !important;
+          background: black !important;
+        }
+
+        /* Force EVERY wrapper to full size */
+        [data-testid],
+        [class*="stream"],
+        [class*="participant"],
+        .str-video,
+        .str-video__call,
+        .str-video__participant,
+        .str-video__participant-view,
+        .str-video__video {
+          width: 100vw !important;
+          height: 100vh !important;
+          max-width: none !important;
+          max-height: none !important;
+        }
+
+        video {
+          width: 100vw !important;
+          height: 100vh !important;
+          object-fit: fill !important;
+          display: block !important;
+        }
+      `}</style>
+
+      {!firstCaller ? (
+        <div
+          style={{
+            width: "100vw",
+            height: "100vh",
+            display: "grid",
+            placeItems: "center",
+            background: "black",
+            color: "white",
+            fontSize: 32,
+          }}
+        >
+          Waiting for caller…
+        </div>
+      ) : (
+        <ParticipantView participant={firstCaller} />
+      )}
+    </>
   );
 }
