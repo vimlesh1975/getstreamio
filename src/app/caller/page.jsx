@@ -82,8 +82,8 @@ function CallerInner({ call, joined, setJoined }) {
   }
 
   return (
-    <div style={{ padding: 20 }}>
-      <h1>📞 Caller</h1>
+    <div >
+      {/* <label>📞 Caller</label> */}
 
       <div style={{ display: "flex", gap: 20 }}>
         {/* HOST VIDEO */}
