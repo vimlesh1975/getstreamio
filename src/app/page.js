@@ -96,12 +96,23 @@ function HostInner() {
       <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
 
         {callers.map((caller, index) => (
-          <div key={caller.sessionId} style={{ marginBottom: 8 }}>
+          <div
+            key={caller.sessionId}
+            style={{
+              width: 300,
+              textAlign: "center",
+            }}
+          >
             <span>{caller.userId}</span>
             <ParticipantView
               participant={caller}
               muted
-              style={{ width: 260, height: 180 }}
+              style={{
+                width: 300,
+                height: 200,
+                background: "black",
+                border: "2px solid #444",
+              }}
             />
 
             <button
