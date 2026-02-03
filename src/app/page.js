@@ -47,11 +47,15 @@ function HostInner() {
 
   const [accepted, setAccepted] = useState(false);
 
-  async function setLiveIndex(index) {
-  await call.updateCustomData({
-    liveIndex: index,
+async function setLiveIndex(index) {
+  await fetch("/api/set-live-index", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ liveIndex: index }),
   });
 }
+
+
 
 
   // Enable host camera only after accept
@@ -110,31 +114,19 @@ function HostInner() {
         )}
 
         {/* Callers */}
-        {callers.map(caller => (
-          <div key={caller.sessionId}>
-            <p>{caller.userId}</p>
-            <ParticipantView
-              participant={caller}
-              style={{ width: 260, height: 180 }}
-            />
+      {callers.map((caller, index) => (
+  <div key={caller.sessionId} style={{ marginBottom: 8 }}>
+    <span>{caller.userId}</span>
 
-            <button
-              onClick={() => takeLive(caller.userId)}
-              style={{
-                marginTop: 6,
-                background:
-                  custom?.liveUserId === caller.userId
-                    ? "red"
-                    : "#333",
-                color: "white",
-              }}
-            >
-              {custom?.liveUserId === caller.userId
-                ? "🔴 LIVE"
-                : "TAKE LIVE"}
-            </button>
-          </div>
-        ))}
+    <button
+      style={{ marginLeft: 10 }}
+      onClick={() => setLiveIndex(index)}
+    >
+      TAKE LIVE
+    </button>
+  </div>
+))}
+
       </div>
     </div>
   );
