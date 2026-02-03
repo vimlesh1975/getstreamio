@@ -77,11 +77,6 @@ async function setLiveIndex(index) {
 
   const hasCaller = callers.length > 0;
 
-  async function takeLive(userId) {
-    // 🔴 Set shared LIVE state
-    await call.updateCustomData({ liveUserId: userId });
-  }
-
   if (!accepted) {
     return (
       <div style={{ padding: 20 }}>
@@ -117,6 +112,11 @@ async function setLiveIndex(index) {
       {callers.map((caller, index) => (
   <div key={caller.sessionId} style={{ marginBottom: 8 }}>
     <span>{caller.userId}</span>
+     <ParticipantView
+              participant={caller}
+              muted
+              style={{ width: 260, height: 180 }}
+            />
 
     <button
       style={{ marginLeft: 10 }}
