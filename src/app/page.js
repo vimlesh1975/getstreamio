@@ -47,6 +47,13 @@ function HostInner() {
 
   const [accepted, setAccepted] = useState(false);
 
+  async function setLiveIndex(index) {
+  await call.updateCustomData({
+    liveIndex: index,
+  });
+}
+
+
   // Enable host camera only after accept
   useEffect(() => {
     if (!accepted) {
@@ -59,7 +66,11 @@ function HostInner() {
   }, [call, accepted]);
 
   const local = participants.find(p => p.isLocal);
-  const callers = participants.filter(p => !p.isLocal);
+  // const callers = participants.filter(p => !p.isLocal);
+  const callers = participants.filter(
+  (p) => !p.isLocal && p.userId !== "host" && p.userId !== "program"
+);
+
   const hasCaller = callers.length > 0;
 
   async function takeLive(userId) {
