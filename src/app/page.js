@@ -11,6 +11,17 @@ import {
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/stream";
 
+const endpoint = async (str) => {
+  const requestOptions = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json", // Specify the content type as JSON
+    },
+    body: JSON.stringify(str), // Convert the data to JSON format
+  };
+  fetch("/api/casparcg", requestOptions);
+};
+
 function formatJoinedAt(joinedAt) {
   if (!joinedAt?.seconds) return "-";
   const ms =
@@ -198,17 +209,25 @@ function HostInner() {
             <ParticipantTable participant={caller} />
             <button
               style={{ marginLeft: 10 }}
-              onClick={() => setLiveIndex(index)}
+              onClick={() => {
+                setLiveIndex(index);
+              }}
             >
               TAKE LIVE {index}
             </button>
-            {/* <label>{JSON.stringify(caller)}</label> */}
+
           </div>
 
 
         ))}
 
       </div>
+      <button onClick={() => {
+        endpoint({
+          action: "endpoint",
+          command: `play 1-1 [html] https://b0dd496a2648.ngrok-free.app/program`,
+        });
+      }}>Start caspar</button>
     </div>
   );
 }

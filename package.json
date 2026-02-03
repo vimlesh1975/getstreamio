@@ -15,7 +15,8 @@
     "next": "16.1.6",
     "node-media-server": "^4.2.4",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "casparcg-connection": "^5.1.0"
   },
   "devDependencies": {
     "eslint": "^9",
