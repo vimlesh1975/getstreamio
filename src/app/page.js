@@ -214,15 +214,17 @@ function HostInner() {
                 border: "2px solid #444",
               }}
             />
-            <ParticipantTable participant={caller} />
-            <button
-              style={{ marginLeft: 10 }}
-              onClick={() => {
-                setLiveUser(caller.userId);
-              }}
-            >
-              TAKE LIVE {caller.userId}
-            </button>
+            {/* <ParticipantTable participant={caller} /> */}
+            {caller.userId !== 'program' &&
+              <button
+                style={{ marginLeft: 10 }}
+                onClick={() => {
+                  setLiveUser(caller.userId);
+                }}
+              >
+                TAKE LIVE {caller.userId}
+              </button>
+            }
 
           </div>
 
