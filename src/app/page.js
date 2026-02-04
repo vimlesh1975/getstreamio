@@ -78,6 +78,8 @@ function ParticipantTable({ participant }) {
   );
 }
 
+
+
 function Row({ label, value }) {
   return (
     <tr>
@@ -102,6 +104,81 @@ function Row({ label, value }) {
         {value}
       </td>
     </tr>
+  );
+}
+function ProgramPreviewGrid() {
+  const { useParticipants, useCallCustomData } =
+    useCallStateHooks();
+
+  const participants = useParticipants();
+  const custom = useCallCustomData();
+
+  const programs = custom?.programs || {};
+
+  const getParticipant = (userId) =>
+    participants.find((p) => p.userId === userId);
+
+  return (
+    <div style={{ marginTop: 20 }}>
+      <h3>🎬 Program Preview</h3>
+
+      <div style={{ display: "flex", gap: 12 }}>
+        {["program1", "program2", "program3", "program4"].map(
+          (key) => {
+            const userId = programs[key];
+            const participant = getParticipant(userId);
+
+            return (
+              <div
+                key={key}
+                style={{
+                  width: 160,
+                  background: "#000",
+                  border: "2px solid #333",
+                  padding: 4,
+                }}
+              >
+                <div
+                  style={{
+                    color: "#fff",
+                    fontSize: 12,
+                    textAlign: "center",
+                    marginBottom: 4,
+                  }}
+                >
+                  {key.toUpperCase()}
+                </div>
+
+                {participant ? (
+                  <ParticipantView
+                    participant={participant}
+                    muted
+                    style={{
+                      width: 152,
+                      height: 90,
+                      background: "black",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: 152,
+                      height: 90,
+                      display: "grid",
+                      placeItems: "center",
+                      color: "#888",
+                      fontSize: 12,
+                    }}
+                  >
+                    — EMPTY —
+                  </div>
+                )}
+              </div>
+            );
+          }
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -189,7 +266,9 @@ function HostInner() {
     );
   }
 
-  return (
+
+
+  return (<>
     <div style={{ padding: 20 }}>
       <h1>🎥 Host Control</h1>
 
@@ -236,7 +315,7 @@ function HostInner() {
           </div>
         ))}
       </div>
-
+      <ProgramPreviewGrid />
       {/* 🎥 CASPARCG TRIGGER */}
       <button
         style={{ marginTop: 20 }}
@@ -286,6 +365,9 @@ function HostInner() {
       >
         Start Caspar (Program 4)
       </button>
+
+
     </div>
-  );
+
+  </>);
 }
