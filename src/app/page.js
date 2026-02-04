@@ -30,6 +30,10 @@ function formatJoinedAt(joinedAt) {
   return new Date(ms).toLocaleString();
 }
 
+const takeonchanel = () => {
+
+}
+
 function ParticipantTable({ participant }) {
   if (!participant) return null;
 
@@ -220,17 +224,20 @@ function HostInner() {
                 border: "2px solid #444",
               }}
             />
-            {/* <ParticipantTable participant={caller} /> */}
-            {caller.userId !== 'program' &&
-              <button
-                style={{ marginLeft: 10 }}
-                onClick={() => {
-                  setLiveUser(caller.userId);
-                }}
-              >
-                TAKE LIVE {caller.userId}
-              </button>
-            }
+
+            <button
+              style={{ marginLeft: 10 }}
+              onClick={() => {
+                setLiveUser(caller.userId);
+              }}
+            >
+              TAKE LIVE {caller.userId}
+            </button>
+            <button onClick={() => takeonchanel(1)}>1</button>
+            <button onClick={() => takeonchanel(2)}>2</button>
+            <button onClick={() => takeonchanel(3)}>3</button>
+            <button onClick={() => takeonchanel(4)}>4</button>
+
 
           </div>
 
