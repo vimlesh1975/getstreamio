@@ -21,7 +21,6 @@ export default function CallerPage() {
     (async () => {
       const c = await createStreamClient(userId);
       const call = c.call("default", "room-1");
-
       setClient(c);
       setCall(call);
     })();
@@ -43,10 +42,8 @@ export default function CallerPage() {
 }
 
 function CallerInner({ call, joined, setJoined }) {
-  const {
-    useParticipants,
-    useLocalParticipant,
-  } = useCallStateHooks();
+  const { useParticipants, useLocalParticipant } =
+    useCallStateHooks();
 
   const participants = useParticipants();
   const self = useLocalParticipant();
@@ -54,24 +51,86 @@ function CallerInner({ call, joined, setJoined }) {
     (p) => p.userId === "host"
   );
 
-  async function startCall() {
-    await call.join({
-      create: true,
-      video: true,
-      audio: true,
-    });
+  const [videoDevices, setVideoDevices] = useState([]);
+  const [selectedDevice, setSelectedDevice] = useState("");
 
-    setJoined(true);
+  // Load cameras BEFORE joining
+  useEffect(() => {
+    async function loadDevices() {
+      const devices =
+        await navigator.mediaDevices.enumerateDevices();
+
+      const cams = devices.filter(
+        (d) => d.kind === "videoinput"
+      );
+
+      setVideoDevices(cams);
+      if (cams[0]) setSelectedDevice(cams[0].deviceId);
+    }
+
+    loadDevices();
+  }, []);
+
+  // Prime camera permission (Android fix)
+  async function primeCamera(deviceId) {
+    const stream =
+      await navigator.mediaDevices.getUserMedia({
+        video: { deviceId: { exact: deviceId } },
+        audio: false,
+      });
+
+    stream.getTracks().forEach((t) => t.stop());
+  }
+
+  async function startCall() {
+    try {
+      if (selectedDevice) {
+        await primeCamera(selectedDevice);
+      }
+
+      await call.join({
+        create: true,
+        video: true,
+        audio: true,
+      });
+
+      // Explicitly select camera after join
+      if (selectedDevice) {
+        await call.camera.select(selectedDevice);
+      }
+
+      setJoined(true);
+    } catch (e) {
+      console.error("Join failed", e);
+    }
   }
 
   if (!joined) {
     return (
       <div style={{ padding: 20 }}>
-        <h1>📞 Caller</h1>
+        <h2>📷 Select Camera</h2>
+
+        <select
+          style={{ width: 260, padding: 6 }}
+          value={selectedDevice}
+          onChange={(e) =>
+            setSelectedDevice(e.target.value)
+          }
+        >
+          {videoDevices.map((d) => (
+            <option key={d.deviceId} value={d.deviceId}>
+              {d.label || "Camera"}
+            </option>
+          ))}
+        </select>
+
+        <br />
+        <br />
+
         <button
           onClick={startCall}
           style={{
-            padding: "10px 16px",
+            padding: "10px 18px",
             fontSize: 16,
           }}
         >
@@ -82,8 +141,8 @@ function CallerInner({ call, joined, setJoined }) {
   }
 
   return (
-    <div >
-      {/* <label>📞 Caller</label> */}
+    <div style={{ padding: 20 }}>
+      <h2>📞 In Call</h2>
 
       <div style={{ display: "flex", gap: 20 }}>
         {/* HOST VIDEO */}
@@ -93,8 +152,8 @@ function CallerInner({ call, joined, setJoined }) {
             <ParticipantView
               participant={host}
               style={{
-                width: 400,
-                height: 300,
+                width: 320,
+                height: 240,
                 background: "black",
               }}
             />
@@ -103,7 +162,7 @@ function CallerInner({ call, joined, setJoined }) {
           )}
         </div>
 
-        {/* SELF PREVIEW */}
+        {/* SELF VIDEO */}
         <div>
           <p>You</p>
           {self ? (
