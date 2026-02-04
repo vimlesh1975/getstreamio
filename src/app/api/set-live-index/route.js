@@ -2,8 +2,8 @@ import jwt from "jsonwebtoken";
 
 export async function POST(req) {
   try {
-    const { liveIndex } = await req.json();
-    console.log(liveIndex)
+    const { liveUserId } = await req.json();
+    console.log(liveUserId)
 
     const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY;
     const apiSecret = process.env.STREAM_API_SECRET;
@@ -34,7 +34,7 @@ export async function POST(req) {
           "Stream-Auth-Type": "jwt",
         },
         body: JSON.stringify({
-          custom: { liveIndex },
+          custom: { liveUserId },
         }),
       }
     );

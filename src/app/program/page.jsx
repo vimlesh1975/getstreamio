@@ -49,16 +49,11 @@ function ProgramInner() {
     call.microphone.disable();
   }, [call]);
 
+  const liveUserId = custom?.liveUserId;
   const callers = [...participants];
 
-  const liveIndex =
-    typeof custom?.liveIndex === "number"
-      ? custom.liveIndex
-      : 0;
-
-  const safeIndex = Math.min(
-    liveIndex,
-    callers.length - 1
+  const liveCaller = callers.find(
+    (p) => p.userId === liveUserId
   );
 
   return (
@@ -115,9 +110,8 @@ function ProgramInner() {
           Waiting for caller…
         </div>
       ) : (<>
-        <h1 style={{ color: 'white', backgroundColor: 'black', fontSize: 100, position: 'absolute', top: 800, left: 700, zIndex: 2 }}>{callers[custom.liveIndex].userId}</h1>
-        <div style={{ zIndex: 0 }}> <ParticipantView participant={callers[custom.liveIndex]} /></div>
-
+        <h1 style={{ color: 'white', backgroundColor: 'black', fontSize: 100, position: 'absolute', top: 800, left: 700, zIndex: 2 }}>{liveCaller.userId}</h1>
+        <div style={{ zIndex: 0 }}> <ParticipantView participant={liveCaller} /></div>
       </>)}
     </>
   );

@@ -140,11 +140,19 @@ function HostInner() {
 
   const [accepted, setAccepted] = useState(false);
 
-  async function setLiveIndex(index) {
+  // async function setLiveIndex(index) {
+  //   await fetch("/api/set-live-index", {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({ liveIndex: index }),
+  //   });
+  // }
+
+  async function setLiveUser(userId) {
     await fetch("/api/set-live-index", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ liveIndex: index }),
+      body: JSON.stringify({ liveUserId: userId }),
     });
   }
 
@@ -210,10 +218,10 @@ function HostInner() {
             <button
               style={{ marginLeft: 10 }}
               onClick={() => {
-                setLiveIndex(index);
+                setLiveUser(caller.userId);
               }}
             >
-              TAKE LIVE {index}
+              TAKE LIVE {caller.userId}
             </button>
 
           </div>
@@ -225,7 +233,7 @@ function HostInner() {
       <button onClick={() => {
         endpoint({
           action: "endpoint",
-          command: `play 1-1 [html] https://b0dd496a2648.ngrok-free.app/program`,
+          command: `play 1-1 [html] https://d8907f87afe4.ngrok-free.app/program`,
         });
       }}>Start caspar</button>
     </div>
