@@ -159,6 +159,7 @@ function HostInner() {
 
 
 
+
   // Enable host camera only after accept
   useEffect(() => {
     if (!accepted) {
@@ -171,6 +172,11 @@ function HostInner() {
   }, [call, accepted]);
 
   const callers = [...participants];
+
+  const visibleCallers = callers.filter(
+    (caller) => caller.userId !== "program"
+  );
+
   const hasCaller = callers.length > 0;
 
   if (!accepted) {
@@ -193,7 +199,7 @@ function HostInner() {
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
 
-        {callers.map((caller, index) => (
+        {visibleCallers.map((caller) => (
 
           <div
             key={caller.sessionId}
