@@ -233,7 +233,7 @@ function HostInner() {
       <button onClick={() => {
         endpoint({
           action: "endpoint",
-          command: `play 1-1 [html] https://d8907f87afe4.ngrok-free.app/program`,
+          command: `play 1-1 [html] ${window.location.origin}/program`,
         });
       }}>Start caspar</button>
     </div>
