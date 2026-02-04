@@ -1,5 +1,8 @@
 "use client";
 
+
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState } from "react";
 import {
   StreamVideo,
@@ -12,6 +15,9 @@ import { createStreamClient } from "@/lib/stream";
 import { useSearchParams } from "next/navigation";
 
 export default function ProgramPage() {
+
+
+
   const params = useSearchParams();
   const out = params.get("out") || "1";
 
@@ -143,3 +149,5 @@ function ProgramInner({ programKey }) {
     </>
   );
 }
+
+
