@@ -9,9 +9,15 @@ import {
   useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/stream";
+import { useSearchParams } from "next/navigation";
 
 export default function ProgramPage() {
-  const userId = "program";
+  const params = useSearchParams();
+  const out = params.get("out") || "1";
+
+  const userId = `program-${out}`; // 👈 IMPORTANT
+  const programKey = `program${out}`;
+
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
 
@@ -25,22 +31,24 @@ export default function ProgramPage() {
       setClient(c);
       setCall(call);
     })();
-  }, []);
+  }, [userId]);
 
   if (!client || !call) return null;
 
   return (
     <StreamVideo client={client}>
       <StreamCall call={call}>
-        <ProgramInner />
+        <ProgramInner programKey={programKey} />
       </StreamCall>
     </StreamVideo>
   );
 }
 
-function ProgramInner() {
+function ProgramInner({ programKey }) {
   const call = useCall();
-  const { useParticipants, useCallCustomData } = useCallStateHooks();
+  const { useParticipants, useCallCustomData } =
+    useCallStateHooks();
+
   const participants = useParticipants();
   const custom = useCallCustomData();
 
@@ -49,16 +57,17 @@ function ProgramInner() {
     call.microphone.disable();
   }, [call]);
 
-  const liveUserId = custom?.liveUserId;
-  const callers = [...participants];
+  // 🔑 READ PROGRAM-SPECIFIC USER
+  const liveUserId = custom?.programs?.[programKey];
 
-  const liveCaller = callers.find(
+  // Find participant by userId (STABLE)
+  const liveCaller = participants.find(
     (p) => p.userId === liveUserId
   );
 
   return (
     <>
-      {/* 🔴 ABSOLUTE OVERRIDE — ALL STREAM WRAPPERS */}
+      {/* 🔴 YOUR FULLSCREEN / OBS CSS (UNCHANGED) */}
       <style jsx global>{`
         html,
         body,
@@ -71,7 +80,6 @@ function ProgramInner() {
           background: black !important;
         }
 
-        /* Force EVERY wrapper to full size */
         [data-testid],
         [class*="stream"],
         [class*="participant"],
@@ -90,12 +98,12 @@ function ProgramInner() {
           width: 100vw !important;
           height: 100vh !important;
           object-fit: fill !important;
-          transform: scaleX(-1) !important; /* 👈 MIRROR */
+          transform: scaleX(-1) !important;
           display: block !important;
         }
       `}</style>
 
-      {callers.length === 0 ? (
+      {!liveCaller ? (
         <div
           style={{
             width: "100vw",
@@ -107,12 +115,31 @@ function ProgramInner() {
             fontSize: 32,
           }}
         >
-          Waiting for caller…
+          Waiting for live source…
         </div>
-      ) : (<>
-        <h1 style={{ color: 'white', backgroundColor: 'black', fontSize: 100, position: 'absolute', top: 800, left: 700, zIndex: 2 }}>{liveCaller.userId}</h1>
-        <div style={{ zIndex: 0 }}> <ParticipantView participant={liveCaller} /></div>
-      </>)}
+      ) : (
+        <>
+          {/* USER LABEL */}
+          <h1
+            style={{
+              color: "white",
+              backgroundColor: "black",
+              fontSize: 100,
+              position: "absolute",
+              top: 800,
+              left: 700,
+              zIndex: 2,
+            }}
+          >
+            {liveCaller.userId}
+          </h1>
+
+          {/* LIVE VIDEO */}
+          <div style={{ zIndex: 0 }}>
+            <ParticipantView participant={liveCaller} />
+          </div>
+        </>
+      )}
     </>
   );
 }

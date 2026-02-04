@@ -144,25 +144,17 @@ function HostInner() {
 
   const [accepted, setAccepted] = useState(false);
 
-  // async function setLiveIndex(index) {
-  //   await fetch("/api/set-live-index", {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({ liveIndex: index }),
-  //   });
-  // }
-
-  async function setLiveUser(userId) {
-    await fetch("/api/set-live-index", {
+  // 🔑 MULTI-PROGRAM SWITCH (SERVER API)
+  async function setLive(programKey, userId) {
+    await fetch("/api/set-live-user", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ liveUserId: userId }),
+      body: JSON.stringify({
+        programKey,
+        liveUserId: userId,
+      }),
     });
   }
-
-
-
-
 
   // Enable host camera only after accept
   useEffect(() => {
@@ -175,13 +167,13 @@ function HostInner() {
     }
   }, [call, accepted]);
 
-  const callers = [...participants];
-
-  const visibleCallers = callers.filter(
-    (caller) => caller.userId !== "program"
+  // 🚫 Hide program viewers
+  const visibleCallers = participants.filter(
+    (p) =>
+      !p.userId.startsWith("program")
   );
 
-  const hasCaller = callers.length > 0;
+  const hasCaller = visibleCallers.length > 0;
 
   if (!accepted) {
     return (
@@ -202,18 +194,18 @@ function HostInner() {
       <h1>🎥 Host Control</h1>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
-
         {visibleCallers.map((caller) => (
-
           <div
             key={caller.sessionId}
             style={{
               width: 300,
               textAlign: "center",
-              border: '2px solid red'
+              border: "2px solid red",
+              padding: 8,
             }}
           >
             <h3>{caller.userId}</h3>
+
             <ParticipantView
               participant={caller}
               muted
@@ -225,32 +217,75 @@ function HostInner() {
               }}
             />
 
-            <button
-              style={{ marginLeft: 10 }}
-              onClick={() => {
-                setLiveUser(caller.userId);
-              }}
-            >
-              TAKE LIVE {caller.userId}
-            </button>
-            <button onClick={() => takeonchanel(1)}>1</button>
-            <button onClick={() => takeonchanel(2)}>2</button>
-            <button onClick={() => takeonchanel(3)}>3</button>
-            <button onClick={() => takeonchanel(4)}>4</button>
-
-
+            {/* 🎬 PROGRAM ROUTING */}
+            {["program1", "program2", "program3", "program4"].map(
+              (p) => (
+                <button
+                  key={p}
+                  onClick={() => setLive(p, caller.userId)}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    marginTop: 4,
+                  }}
+                >
+                  TAKE LIVE → {p.toUpperCase()}
+                </button>
+              )
+            )}
           </div>
-
-
         ))}
-
       </div>
-      <button onClick={() => {
-        endpoint({
-          action: "endpoint",
-          command: `play 1-1 [html] ${window.location.origin}/program`,
-        });
-      }}>Start caspar</button>
+
+      {/* 🎥 CASPARCG TRIGGER */}
+      <button
+        style={{ marginTop: 20 }}
+        onClick={() => {
+          endpoint({
+            action: "endpoint",
+            command: `play 1-1 [html] ${window.location.origin}/program?out=1`,
+          });
+        }}
+      >
+        Start Caspar (Program 1)
+      </button>
+
+      <button
+        style={{ marginTop: 20 }}
+        onClick={() => {
+          endpoint({
+            action: "endpoint",
+            command: `play 2-1 [html] ${window.location.origin}/program?out=2`,
+          });
+        }}
+      >
+        Start Caspar (Program 2)
+      </button>
+
+
+      <button
+        style={{ marginTop: 20 }}
+        onClick={() => {
+          endpoint({
+            action: "endpoint",
+            command: `play 3-1 [html] ${window.location.origin}/program?out=3`,
+          });
+        }}
+      >
+        Start Caspar (Program 3)
+      </button>
+
+      <button
+        style={{ marginTop: 20 }}
+        onClick={() => {
+          endpoint({
+            action: "endpoint",
+            command: `play 3-1 [html] ${window.location.origin}/program?out=4`,
+          });
+        }}
+      >
+        Start Caspar (Program 4)
+      </button>
     </div>
   );
 }
