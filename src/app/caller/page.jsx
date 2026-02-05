@@ -57,15 +57,16 @@ function CallerInner({ call, joined, setJoined }) {
   const { isMuted: micMuted } = useMicrophoneState();
   const { isMuted: camMuted } = useCameraState();
 
+  // SDK Local Audio Level (Value between 0 and 1)
+  const localAudioLevel = self?.audioLevel || 0;
+
   const [videoDevices, setVideoDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState("");
-  const [audioLevel, setAudioLevel] = useState(0);
+  const [setupAudioLevel, setSetupAudioLevel] = useState(0);
 
+  // 1. SETUP SCREEN LOGIC
   useEffect(() => {
-    let audioContext;
-    let analyser;
-    let animationFrame;
-    let micStream;
+    let audioContext, analyser, animationFrame, micStream;
 
     async function setupDevices() {
       try {
@@ -91,7 +92,7 @@ function CallerInner({ call, joined, setJoined }) {
         const updateLevel = () => {
           analyser.getByteFrequencyData(dataArray);
           const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
-          setAudioLevel(average);
+          setSetupAudioLevel(average);
           animationFrame = requestAnimationFrame(updateLevel);
         };
         updateLevel();
@@ -132,9 +133,9 @@ function CallerInner({ call, joined, setJoined }) {
     return (
       <div style={{ padding: 30, background: "#1a1a1a", minHeight: "100vh", color: "white", fontFamily: "sans-serif" }}>
         <h2 style={{ marginBottom: 30 }}>📷 Media Setup</h2>
-        <label>To join your secure video call, allow access to camera and microphone. And keep your device Horizontal.</label>
+        <p style={{ marginBottom: 20, color: "#ccc" }}>To join your secure video call, allow access to camera and microphone. Keep your device horizontal.</p>
 
-        <div style={{ marginBottom: 25, marginTop: 20 }}>
+        <div style={{ marginBottom: 25 }}>
           <label style={{ display: "block", marginBottom: 10, color: "#aaa" }}>Select Camera</label>
           <select
             style={{ width: "100%", maxWidth: 400, padding: 12, borderRadius: 8, border: "1px solid #444", background: "#333", color: "white" }}
@@ -150,7 +151,7 @@ function CallerInner({ call, joined, setJoined }) {
         <div style={{ marginBottom: 40 }}>
           <label style={{ display: "block", marginBottom: 10, color: "#aaa" }}>Microphone Check</label>
           <div style={{ width: "100%", maxWidth: 400, height: 10, background: "#333", borderRadius: 5, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${Math.min((audioLevel / 128) * 100, 100)}%`, background: audioLevel > 30 ? "#4caf50" : "#666", transition: "width 0.1s ease" }} />
+            <div style={{ height: "100%", width: `${Math.min((setupAudioLevel / 128) * 100, 100)}%`, background: setupAudioLevel > 30 ? "#4caf50" : "#666", transition: "width 0.1s ease" }} />
           </div>
         </div>
 
@@ -186,7 +187,24 @@ function CallerInner({ call, joined, setJoined }) {
             ) : (
               <div className="placeholder">Starting camera…</div>
             )}
-            {/* Overlay if Camera is muted */}
+
+            {/* 🎤 AUDIO LEVEL INDICATOR (IN-CALL) */}
+            <div className="in-call-audio-meter">
+              <div
+                className="audio-meter-fill"
+                style={{
+                  // Math.pow(n, 0.4) pushes low values way up. 
+                  // If level is 0.1, result is ~0.4 (40% height)
+                  height: `${Math.min(Math.pow(localAudioLevel, 0.4) * 100, 100)}%`,
+
+                  background: micMuted ? "#ff4444" : "#4caf50",
+                  // Optional: Adds a glow when you are actually talking
+                  boxShadow: !micMuted && localAudioLevel > 0.01 ? "0 0 10px #4caf50" : "none",
+                  transition: "height 0.08s ease-out" // Fast but smooth
+                }}
+              />
+            </div>
+
             {camMuted && (
               <div className="camera-off-overlay">
                 <span>Camera Off</span>
@@ -225,13 +243,14 @@ function CallerInner({ call, joined, setJoined }) {
           display: flex;
           flex-direction: column;
           gap: 10px;
-          height: calc(100vh - 100px); /* Adjusted for control bar */
+          height: calc(100vh - 100px);
         }
         .video-tile {
           flex: 1;
           display: flex;
           flex-direction: column;
           min-height: 0;
+          position: relative;
         }
         .label {
           margin: 5px 0;
@@ -252,6 +271,26 @@ function CallerInner({ call, joined, setJoined }) {
           position: absolute; top: 0; left: 0; right: 0; bottom: 0;
           background: #111; display: grid; place-items: center; color: #555;
           font-weight: bold;
+        }
+
+        /* 🎤 In-Call Audio Meter Styles */
+        .in-call-audio-meter {
+          position: absolute;
+          left: 10px;
+          bottom: 10px;
+          width: 6px;
+          height: 150px;
+          background: rgba(0,0,0,0.4);
+          border-radius: 3px;
+          overflow: hidden;
+          border: 1px solid rgba(255,255,255,0.1);
+          z-index: 2;
+        }
+        .audio-meter-fill {
+          position: absolute;
+          bottom: 0;
+          width: 100%;
+          transition: height 0.1s ease;
         }
 
         /* Controls Styles */
@@ -280,16 +319,9 @@ function CallerInner({ call, joined, setJoined }) {
           white-space: nowrap;
           transition: 0.2s;
         }
-        .control-btn.muted {
-          background: #ff4444;
-        }
-        .control-btn.leave {
-          background: #333;
-          border: 1px solid #555;
-        }
-        .control-btn:active {
-          transform: scale(0.95);
-        }
+        .control-btn.muted { background: #ff4444; }
+        .control-btn.leave { background: #333; border: 1px solid #555; }
+        .control-btn:active { transform: scale(0.95); }
 
         @media (min-width: 768px) or (orientation: landscape) {
           .video-grid { flex-direction: row; }
