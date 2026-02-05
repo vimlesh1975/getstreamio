@@ -152,45 +152,81 @@ function CallerInner({ call, joined, setJoined }) {
   }
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>📞 In Call</h2>
+    <div style={{ padding: 10, background: "#1a1a1a", minHeight: "100vh", color: "white" }}>
+      <h2 style={{ fontSize: "1.2rem", marginBottom: 15 }}>📞 In Call</h2>
 
-      <div style={{ display: "flex", gap: 20 }}>
+      {/* RESPONSIVE CONTAINER */}
+      <div className="video-grid">
         {/* HOST VIDEO */}
-        <div>
+        <div className="video-tile">
           <p>Host</p>
-          {host ? (
-            <ParticipantView
-              participant={host}
-              style={{
-                width: 320,
-                height: 240,
-                background: "black",
-              }}
-            />
-          ) : (
-            <p>Waiting for host…</p>
-          )}
+          <div className="video-wrapper">
+            {host ? (
+              <ParticipantView participant={host} />
+            ) : (
+              <div className="placeholder">Waiting for host…</div>
+            )}
+          </div>
         </div>
 
         {/* SELF VIDEO */}
-        <div>
+        <div className="video-tile">
           <p>You</p>
-          {self ? (
-            <ParticipantView
-              participant={self}
-              muted
-              style={{
-                width: 200,
-                height: 150,
-                background: "black",
-              }}
-            />
-          ) : (
-            <p>Starting camera…</p>
-          )}
+          <div className="video-wrapper">
+            {self ? (
+              <ParticipantView participant={self} muted />
+            ) : (
+              <div className="placeholder">Starting camera…</div>
+            )}
+          </div>
         </div>
       </div>
+
+      <style jsx>{`
+        .video-grid {
+          display: flex;
+          flex-direction: column; /* Vertical stack by default (Mobile) */
+          gap: 15px;
+          width: 100%;
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+
+        .video-tile {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .video-tile p {
+          margin: 0 0 8px 0;
+          font-weight: bold;
+        }
+
+        .video-wrapper {
+          aspect-ratio: 4 / 3; /* Keeps host/self the same shape */
+          background: black;
+          border-radius: 8px;
+          overflow: hidden;
+          position: relative;
+        }
+
+        .placeholder {
+          display: grid;
+          place-items: center;
+          height: 100%;
+          font-size: 0.9rem;
+          color: #888;
+        }
+
+        /* Landscape or wider screens (iPad horizontal) */
+        @media (min-width: 768px) or (orientation: landscape) {
+          .video-grid {
+            flex-direction: row; /* Side by side */
+            align-items: flex-start;
+          }
+        }
+      `}</style>
     </div>
   );
 }
