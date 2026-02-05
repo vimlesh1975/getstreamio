@@ -214,26 +214,22 @@ export default function HostPage() {
   );
 }
 
+// ... (rest of your imports and helper functions remain the same)
+
 function HostInner() {
   const call = useCall();
   const { useParticipants } = useCallStateHooks();
   const participants = useParticipants();
-
   const [accepted, setAccepted] = useState(false);
 
-  // 🔑 MULTI-PROGRAM SWITCH (SERVER API)
   async function setLive(programKey, userId) {
     await fetch("/api/set-live-user", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        programKey,
-        liveUserId: userId,
-      }),
+      body: JSON.stringify({ programKey, liveUserId: userId }),
     });
   }
 
-  // Enable host camera only after accept
   useEffect(() => {
     if (!accepted) {
       call.camera.disable();
@@ -244,32 +240,22 @@ function HostInner() {
     }
   }, [call, accepted]);
 
-  // 🚫 Hide program viewers
-  const visibleCallers = participants.filter(
-    (p) =>
-      !p.userId.startsWith("program")
-  );
-
+  const visibleCallers = participants.filter((p) => !p.userId.startsWith("program"));
   const hasCaller = visibleCallers.length > 0;
 
   if (!accepted) {
     return (
       <div style={{ padding: 20 }}>
         <h1>🎧 Host</h1>
-        <button
-          disabled={!hasCaller}
-          onClick={() => setAccepted(true)}
-        >
+        <button disabled={!hasCaller} onClick={() => setAccepted(true)}>
           {hasCaller ? "✅ Accept Call" : "Waiting for call…"}
         </button>
       </div>
     );
   }
 
-
-
-  return (<>
-    <div style={{ padding: 20 }}>
+  return (
+    <div style={{ padding: 20, background: "#000", minHeight: "100vh", color: "#fff" }}>
       <h1>🎥 Host Control</h1>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
@@ -277,97 +263,101 @@ function HostInner() {
           <div
             key={caller.sessionId}
             style={{
-              width: 300,
+              width: 320,
               textAlign: "center",
-              border: "2px solid red",
-              padding: 8,
+              border: "1px solid #333",
+              borderRadius: "8px",
+              padding: 10,
+              background: "#111",
+              position: "relative",
             }}
           >
-            <h3>{caller.userId}</h3>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+              <h3 style={{ margin: 0, fontSize: 16 }}>{caller.userId}</h3>
+              <span style={{ color: caller.isSpeaking ? "#4caf50" : "#666", fontSize: 12 }}>
+                {caller.isSpeaking ? "● SPEAKING" : "SILENT"}
+              </span>
+            </div>
 
-            <ParticipantView
-              participant={caller}
-              muted
-              style={{
-                width: 300,
-                height: 200,
-                background: "black",
-                border: "2px solid #444",
-              }}
-            />
+            <div style={{ position: "relative", width: 300, height: 200, overflow: "hidden", borderRadius: 4 }}>
+              <ParticipantView
+                participant={caller}
+                muted
+                style={{ width: "100%", height: "100%", background: "black" }}
+              />
+
+              {/* 🎤 HOST-SIDE AUDIO BAR (Overlayed on caller video) */}
+              <div className="host-audio-monitor">
+                <div
+                  className="host-audio-fill"
+                  style={{
+                    // High sensitivity for PC monitoring
+                    width: `${Math.min(caller.audioLevel * 500, 100)}%`,
+                    background: caller.audioLevel > 0.02 ? "#4caf50" : "#555",
+                    boxShadow: caller.audioLevel > 0.02 ? "0 0 10px #4caf50" : "none"
+                  }}
+                />
+              </div>
+            </div>
 
             {/* 🎬 PROGRAM ROUTING */}
-            {["program1", "program2", "program3", "program4"].map(
-              (p) => (
+            <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5 }}>
+              {["program1", "program2", "program3", "program4"].map((p) => (
                 <button
                   key={p}
                   onClick={() => setLive(p, caller.userId)}
                   style={{
-                    display: "block",
-                    width: "100%",
-                    marginTop: 4,
+                    padding: "6px",
+                    fontSize: "11px",
+                    cursor: "pointer",
+                    background: "#222",
+                    color: "white",
+                    border: "1px solid #444",
+                    borderRadius: "4px"
                   }}
                 >
-                  TAKE LIVE → {p.toUpperCase()}
+                  TAKE {p.toUpperCase()}
                 </button>
-              )
-            )}
+              ))}
+            </div>
           </div>
         ))}
       </div>
+
       <ProgramPreviewGrid />
-      {/* 🎥 CASPARCG TRIGGER */}
-      <button
-        style={{ marginTop: 20 }}
-        onClick={() => {
-          endpoint({
-            action: "endpoint",
-            command: `play 1-1 [html] ${window.location.origin}/program?out=1`,
-          });
-        }}
-      >
-        Start Caspar (Program 1)
-      </button>
 
-      <button
-        style={{ marginTop: 20 }}
-        onClick={() => {
-          endpoint({
-            action: "endpoint",
-            command: `play 2-1 [html] ${window.location.origin}/program?out=2`,
-          });
-        }}
-      >
-        Start Caspar (Program 2)
-      </button>
+      {/* CASPAR CONTROLS */}
+      <div style={{ marginTop: 30, display: "flex", gap: 10 }}>
+        {[1, 2, 3, 4].map(num => (
+          <button
+            key={num}
+            onClick={() => endpoint({
+              action: "endpoint",
+              command: `play ${num}-1 [html] ${window.location.origin}/program?out=${num}`,
+            })}
+          >
+            Start Caspar (P{num})
+          </button>
+        ))}
+      </div>
 
-
-      <button
-        style={{ marginTop: 20 }}
-        onClick={() => {
-          endpoint({
-            action: "endpoint",
-            command: `play 3-1 [html] ${window.location.origin}/program?out=3`,
-          });
-        }}
-      >
-        Start Caspar (Program 3)
-      </button>
-
-      <button
-        style={{ marginTop: 20 }}
-        onClick={() => {
-          endpoint({
-            action: "endpoint",
-            command: `play 3-1 [html] ${window.location.origin}/program?out=4`,
-          });
-        }}
-      >
-        Start Caspar (Program 4)
-      </button>
-
-
+      <style jsx>{`
+        .host-audio-monitor {
+          position: absolute;
+          bottom: 10px;
+          left: 10px;
+          right: 10px;
+          height: 6px;
+          background: rgba(0,0,0,0.5);
+          border-radius: 3px;
+          border: 1px solid rgba(255,255,255,0.1);
+          overflow: hidden;
+        }
+        .host-audio-fill {
+          height: 100%;
+          transition: width 0.05s linear;
+        }
+      `}</style>
     </div>
-
-  </>);
+  );
 }
