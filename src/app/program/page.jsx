@@ -113,6 +113,12 @@ function ProgramInner({ programKey }) {
           transform: scaleX(-1) !important;
           display: block !important;
         }
+           :global(.str-video__participant-details),
+        :global(.str-video__participant-view__info),
+        :global(.str-video__participant-view__name-area) {
+          display: none !important;
+          visibility: hidden !important;
+        }
       `}</style>
 
       {!liveCaller ? (
@@ -131,22 +137,6 @@ function ProgramInner({ programKey }) {
         </div>
       ) : (
         <>
-          {/* USER LABEL */}
-          <h1
-            style={{
-              color: "white",
-              backgroundColor: "black",
-              fontSize: 100,
-              position: "absolute",
-              top: 800,
-              left: 700,
-              zIndex: 2,
-            }}
-          >
-            {liveCaller.userId}
-          </h1>
-
-          {/* LIVE VIDEO */}
           <div style={{ zIndex: 0 }}>
             <ParticipantView participant={liveCaller} />
           </div>
