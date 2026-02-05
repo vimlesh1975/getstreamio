@@ -13,7 +13,6 @@ import { useSearchParams } from "next/navigation";
 
 export const dynamic = 'force-dynamic';
 
-// 1. This is your main entry point (The Shell)
 export default function ProgramPage() {
   return (
     <Suspense fallback={<div style={{ background: 'black', height: '100vh' }} />}>
@@ -22,7 +21,6 @@ export default function ProgramPage() {
   );
 }
 
-// 2. This component safely uses useSearchParams
 function ProgramLoader() {
   const params = useSearchParams();
   const out = params.get("out") || "1";
@@ -37,6 +35,8 @@ function ProgramLoader() {
     (async () => {
       const c = await createStreamClient(userId);
       const call = c.call("default", "room-1");
+
+      // 🔑 REQUIRED CHANGE: Explicitly join without requesting hardware to fix Caspar error
       await call.join({ video: false, audio: false });
 
       setClient(c);
@@ -55,7 +55,6 @@ function ProgramLoader() {
   );
 }
 
-
 function ProgramInner({ programKey }) {
   const call = useCall();
   const { useParticipants, useCallCustomData } =
@@ -69,17 +68,14 @@ function ProgramInner({ programKey }) {
     call.microphone.disable();
   }, [call]);
 
-  // 🔑 READ PROGRAM-SPECIFIC USER
   const liveUserId = custom?.programs?.[programKey];
 
-  // Find participant by userId (STABLE)
   const liveCaller = participants.find(
     (p) => p.userId === liveUserId
   );
 
   return (
     <>
-      {/* 🔴 YOUR FULLSCREEN / OBS CSS (UNCHANGED) */}
       <style jsx global>{`
         html,
         body,
@@ -113,11 +109,14 @@ function ProgramInner({ programKey }) {
           transform: scaleX(-1) !important;
           display: block !important;
         }
-           :global(.str-video__participant-details),
+
+        /* 🔑 REQUIRED CHANGE: Forcefully hide the built-in SDK UserID labels */
+        :global(.str-video__participant-details),
         :global(.str-video__participant-view__info),
         :global(.str-video__participant-view__name-area) {
           display: none !important;
           visibility: hidden !important;
+          opacity: 0 !important;
         }
       `}</style>
 
@@ -138,12 +137,14 @@ function ProgramInner({ programKey }) {
       ) : (
         <>
           <div style={{ zIndex: 0 }}>
-            <ParticipantView participant={liveCaller} />
+            {/* 🔑 REQUIRED CHANGE: drawParticipantInfo={false} to help hide the label */}
+            <ParticipantView
+              participant={liveCaller}
+              drawParticipantInfo={false}
+            />
           </div>
         </>
       )}
     </>
   );
 }
-
-
