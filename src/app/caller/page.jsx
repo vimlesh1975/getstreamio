@@ -57,15 +57,26 @@ function CallerInner({ call, joined, setJoined }) {
   // Load cameras BEFORE joining
   useEffect(() => {
     async function loadDevices() {
-      const devices =
-        await navigator.mediaDevices.enumerateDevices();
+      try {
+        // 1. Try to get devices
+        let devices = await navigator.mediaDevices.enumerateDevices();
 
-      const cams = devices.filter(
-        (d) => d.kind === "videoinput"
-      );
+        // 2. If labels are empty, it means we don't have permission yet.
+        // We "ping" the camera to trigger the browser prompt.
+        if (devices.every(d => !d.label)) {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          // Stop the tracks immediately so the light doesn't stay on
+          stream.getTracks().forEach(t => t.stop());
+          // Re-enumerate now that we have permission
+          devices = await navigator.mediaDevices.enumerateDevices();
+        }
 
-      setVideoDevices(cams);
-      if (cams[0]) setSelectedDevice(cams[0].deviceId);
+        const cams = devices.filter((d) => d.kind === "videoinput");
+        setVideoDevices(cams);
+        if (cams[0]) setSelectedDevice(cams[0].deviceId);
+      } catch (err) {
+        console.error("Error loading devices:", err);
+      }
     }
 
     loadDevices();
