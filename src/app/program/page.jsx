@@ -1,9 +1,6 @@
 "use client";
 
-
-export const dynamic = 'force-dynamic';
-
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import {
   StreamVideo,
   StreamCall,
@@ -14,14 +11,23 @@ import {
 import { createStreamClient } from "@/lib/stream";
 import { useSearchParams } from "next/navigation";
 
+export const dynamic = 'force-dynamic';
+
+// 1. This is your main entry point (The Shell)
 export default function ProgramPage() {
+  return (
+    <Suspense fallback={<div style={{ background: 'black', height: '100vh' }} />}>
+      <ProgramLoader />
+    </Suspense>
+  );
+}
 
-
-
+// 2. This component safely uses useSearchParams
+function ProgramLoader() {
   const params = useSearchParams();
   const out = params.get("out") || "1";
 
-  const userId = `program-${out}`; // 👈 IMPORTANT
+  const userId = `program-${out}`;
   const programKey = `program${out}`;
 
   const [client, setClient] = useState(null);
@@ -31,7 +37,6 @@ export default function ProgramPage() {
     (async () => {
       const c = await createStreamClient(userId);
       const call = c.call("default", "room-1");
-
       await call.join({ video: false, audio: false });
 
       setClient(c);
@@ -49,6 +54,7 @@ export default function ProgramPage() {
     </StreamVideo>
   );
 }
+
 
 function ProgramInner({ programKey }) {
   const call = useCall();
