@@ -128,8 +128,10 @@ export default function HostPage() {
  */
 function HostInner() {
   const call = useCall();
-  const { useParticipants } = useCallStateHooks();
+  const { useParticipants, useCallCustomData } = useCallStateHooks();
   const participants = useParticipants();
+  const custom = useCallCustomData();
+  const programs = custom?.programs || {};
   const [accepted, setAccepted] = useState(false);
 
   async function setLive(programKey, userId) {
@@ -150,21 +152,21 @@ function HostInner() {
     }
   }, [call, accepted]);
 
-  // const visibleCallers = participants.filter((p) => !p.userId.startsWith("program") && p.userId !== "host");
   const visibleCallers = participants.filter((p) => !p.userId.startsWith("program"));
   const hasCaller = visibleCallers.length > 0;
 
   if (!accepted) {
     return (
-      <div style={{ padding: 20, background: "#000", height: "100vh", color: "white", display: "grid", placeItems: "center" }}>
-        <div style={{ textAlign: "center" }}>
-          <h1 style={{ fontSize: "3rem", marginBottom: "20px" }}>🎧 Monitor</h1>
+      <div className="onboarding-screen">
+        <div className="glass-panel">
+          <h1>🎙️ Studio Monitor</h1>
+          <p>Ready to manage the broadcast gallery?</p>
           <button
-            style={{ padding: "20px 50px", fontSize: "20px", borderRadius: "50px", background: "#0070f3", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}
+            className="start-btn"
             disabled={!hasCaller}
             onClick={() => setAccepted(true)}
           >
-            {hasCaller ? "✅ START SESSION" : "WAITING FOR CALLERS..."}
+            {hasCaller ? "LAUNCH CONTROL ROOM" : "WAITING FOR SIGNAL..."}
           </button>
         </div>
       </div>
@@ -172,64 +174,70 @@ function HostInner() {
   }
 
   return (
-    <div style={{ padding: 20, background: "#000", minHeight: "100vh", color: "#fff", fontFamily: "sans-serif" }}>
-      <header style={{ display: "flex", justifyContent: "space-between", marginBottom: 30 }}>
-        <h1 style={{ margin: 0, color: "#555" }}>🎥 <span style={{ color: "#fff" }}>GALLERY</span> CONTROL</h1>
-        <div style={{ background: "#111", padding: "10px 20px", borderRadius: "8px", border: "1px solid #222" }}>
-          Active Callers: {visibleCallers.length - 1}
+    <div className="dashboard-container">
+      <header className="main-header">
+        <div className="brand">
+          <div className="live-indicator">REC</div>
+          <h1>GALLERY <span>CONTROL</span></h1>
+        </div>
+        <div className="stats-badge">
+          CONNECTED SOURCES: {visibleCallers.length}
         </div>
       </header>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 25 }}>
-        {visibleCallers.map((caller) => (
-          <div key={caller.sessionId} className="caller-card">
+      <div className="gallery-grid">
+        {visibleCallers.map((caller) => {
+          // Check if this caller is currently live in ANY program
+          const isLive = Object.values(programs).includes(caller.userId);
 
-            {/* Header: ID is strictly here */}
-            <div className="card-header">
-              <span className="user-id-label">{caller.userId}</span>
-              <div className={`audio-active-dot ${caller.isSpeaking ? "on" : ""}`} />
-            </div>
+          return (
+            <div key={caller.sessionId} className={`caller-card ${isLive ? 'is-live' : ''}`}>
+              <div className="card-header">
+                <span className="user-id-label">{caller.userId}</span>
+                {isLive && <span className="live-pill">LIVE</span>}
+                <div className={`audio-active-dot ${caller.isSpeaking ? "on" : ""}`} />
+              </div>
 
-            <div className="video-viewport">
-              {/* ParticipantView - Completely cleaned of overlays */}
-              <ParticipantView
-                participant={caller}
-                muted
-                drawParticipantInfo={false}
-                drawParticipantName={false}
-                style={{ width: "100%", height: "100%" }}
-              />
-
-              {/* 🎤 INTEGRATED VU METER */}
-              <div className="vu-container">
-                <div
-                  className="vu-bar"
-                  style={{
-                    width: `${Math.min(caller.audioLevel * 500, 100)}%`,
-                    background: caller.audioLevel > 0.01 ? "#4caf50" : "#333",
-                  }}
+              <div className="video-viewport">
+                <ParticipantView
+                  participant={caller}
+                  muted
+                  drawParticipantInfo={false}
+                  style={{ width: "100%", height: "100%" }}
                 />
+
+                <div className="vu-meter-vertical">
+                  <div
+                    className="vu-level"
+                    style={{
+                      height: `${Math.min(caller.audioLevel * 400, 100)}%`,
+                      backgroundColor: caller.audioLevel > 0.05 ? '#40ff5a' : '#555'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="take-grid">
+                {["program1", "program2", "program3", "program4"].map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setLive(p, caller.userId)}
+                    className={`take-button ${programs[p] === caller.userId ? 'active' : ''}`}
+                  >
+                    PGM {p.slice(-1)}
+                  </button>
+                ))}
               </div>
             </div>
-
-            {/* ROUTING BUTTONS */}
-            <div className="take-grid">
-              {["program1", "program2", "program3", "program4"].map((p) => (
-                <button key={p} onClick={() => setLive(p, caller.userId)} className="take-button">
-                  TAKE {p.slice(-1)}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <ProgramPreviewGrid />
 
-      {/* CASPAR TRIGGERS */}
-      <div style={{ marginTop: 40, borderTop: "1px solid #222", paddingTop: 20 }}>
-        <p style={{ color: "#666", fontSize: 12 }}>CASPARCG MASTER CONTROLS</p>
-        <div style={{ display: "flex", gap: 10 }}>
+      <footer className="caspar-controls">
+        <h3>SYSTEM ENGINE (CASPARCG)</h3>
+        <div className="caspar-grid">
           {[1, 2, 3, 4].map(num => (
             <button
               key={num}
@@ -239,112 +247,182 @@ function HostInner() {
                 command: `play ${num}-1 [html] ${window.location.origin}/program?out=${num}`,
               })}
             >
-              Init Caspar Ch {num}
+              RESET CH {num}
             </button>
           ))}
         </div>
-      </div>
+      </footer>
 
       <style jsx>{`
-        /* 🚫 GLOBAL OVERRIDE: Remove UserID from inside video */
-        :global(.str-video__participant-details),
-        :global(.str-video__participant-view__info),
-        :global(.str-video__participant-view__name-area) {
-          display: none !important;
-          visibility: hidden !important;
+        /* Setup & Typography */
+        :global(body) {
+          margin: 0;
+          background-color: #0f111a;
+          color: #e2e8f0;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .dashboard-container {
+          padding: 30px;
+          min-height: 100vh;
+          background: radial-gradient(circle at top left, #1a1c2c 0%, #0f111a 100%);
+        }
+
+        /* Onboarding */
+        .onboarding-screen {
+          height: 100vh;
+          display: grid;
+          place-items: center;
+          background: #090a0f;
+        }
+        .glass-panel {
+          padding: 40px;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 24px;
+          text-align: center;
+          backdrop-filter: blur(10px);
+        }
+        .start-btn {
+          margin-top: 20px;
+          padding: 16px 40px;
+          background: #0070f3;
+          color: white;
+          border: none;
+          border-radius: 12px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: transform 0.2s;
+        }
+        .start-btn:hover:not(:disabled) { transform: scale(1.05); background: #0080ff; }
+
+        /* Header */
+        .main-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 40px;
+          border-bottom: 1px solid rgba(255,255,255,0.1);
+          padding-bottom: 20px;
+        }
+        .brand { display: flex; align-items: center; gap: 15px; }
+        .brand h1 { font-size: 1.2rem; letter-spacing: 2px; margin: 0; color: #64748b; }
+        .brand h1 span { color: #fff; }
+        .live-indicator {
+          background: #ef4444;
+          padding: 4px 12px;
+          border-radius: 4px;
+          font-size: 0.7rem;
+          font-weight: 900;
+          animation: blink 2s infinite;
+        }
+
+        /* Gallery Grid */
+        .gallery-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+          gap: 25px;
         }
 
         .caller-card {
-          width: 320px;
-          background: #0a0a0a;
+          background: #161925;
           border-radius: 12px;
-          border: 1px solid #222;
-          padding: 10px;
-          transition: border-color 0.3s;
+          border: 1px solid #2d3748;
+          padding: 12px;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
         }
-        .caller-card:hover { border-color: #444; }
+        .caller-card.is-live {
+          border-color: #ef4444;
+          box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+        }
 
         .card-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 5px 2px 10px 2px;
+          margin-bottom: 10px;
         }
-        .user-id-label {
+        .user-id-label { font-family: monospace; color: #94a3b8; font-size: 0.9rem; }
+        .live-pill {
+          background: #ef4444;
+          font-size: 10px;
           font-weight: bold;
-          font-size: 13px;
-          letter-spacing: 0.5px;
-          color: #0070f3;
-        }
-        .audio-active-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: #222;
-          transition: 0.2s;
-        }
-        .audio-active-dot.on {
-          background: #4caf50;
-          box-shadow: 0 0 10px #4caf50;
+          padding: 2px 8px;
+          border-radius: 10px;
         }
 
+        /* Video Area */
         .video-viewport {
           position: relative;
-          width: 100%;
-          height: 180px;
+          aspect-ratio: 16/9;
           background: #000;
-          border-radius: 6px;
+          border-radius: 8px;
           overflow: hidden;
-          border: 1px solid #1a1a1a;
         }
-
-        .vu-container {
+        .vu-meter-vertical {
           position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          height: 5px;
-          background: rgba(0,0,0,0.9);
-          z-index: 10;
+          right: 8px;
+          top: 10px;
+          bottom: 10px;
+          width: 4px;
+          background: rgba(0,0,0,0.5);
+          border-radius: 2px;
+          display: flex;
+          flex-direction: column-reverse;
         }
-        .vu-bar {
-          height: 100%;
-          transition: width 0.05s linear;
-        }
+        .vu-level { width: 100%; border-radius: 2px; transition: height 0.1s ease; }
 
+        /* Controls */
         .take-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 6px;
-          margin-top: 12px;
+          gap: 8px;
+          margin-top: 15px;
         }
         .take-button {
-          background: #111;
-          color: #eee;
-          border: 1px solid #333;
-          padding: 10px;
-          font-size: 11px;
-          font-weight: bold;
+          background: #1e293b;
+          border: 1px solid #334155;
+          color: #94a3b8;
+          padding: 12px;
           border-radius: 6px;
+          font-weight: bold;
+          font-size: 0.75rem;
           cursor: pointer;
-          transition: all 0.2s;
         }
-        .take-button:hover {
-          background: #0070f3;
-          border-color: #0070f3;
-          transform: translateY(-1px);
+        .take-button:hover { background: #334155; color: #fff; }
+        .take-button.active {
+          background: #ef4444;
+          border-color: #ef4444;
+          color: white;
         }
 
-        .caspar-btn {
-          background: #1a1a1a;
-          color: #888;
-          border: 1px solid #333;
-          padding: 8px 15px;
-          border-radius: 4px;
-          cursor: pointer;
-          font-size: 12px;
+        /* Footer & Caspar */
+        .caspar-controls {
+          margin-top: 60px;
+          background: rgba(0,0,0,0.3);
+          padding: 20px;
+          border-radius: 12px;
         }
-        .caspar-btn:hover { background: #333; color: white; }
+        .caspar-controls h3 { font-size: 0.8rem; color: #475569; margin-bottom: 15px; }
+        .caspar-grid { display: flex; gap: 10px; }
+        .caspar-btn {
+          background: transparent;
+          border: 1px solid #334155;
+          color: #64748b;
+          padding: 8px 16px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 0.8rem;
+        }
+        .caspar-btn:hover { border-color: #0070f3; color: #0070f3; }
+
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+
+        :global(.str-video__participant-details) { display: none !important; }
       `}</style>
     </div>
   );
