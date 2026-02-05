@@ -125,7 +125,8 @@ function CallerInner({ call, joined, setJoined }) {
   if (!joined) {
     return (
       <div style={{ padding: 30, background: "#1a1a1a", minHeight: "100vh", color: "white", fontFamily: "sans-serif" }}>
-        <h2 style={{ marginBottom: 30 }}>📷 Media Setup</h2>
+        {/* <h2 style={{ marginBottom: 30 }}>📷 Media Setup</h2> */}
+        <label>To join your secure video call, allow access to camera and microphone. And keep you device Horizontal.</label>
 
         <div style={{ marginBottom: 25 }}>
           <label style={{ display: "block", marginBottom: 10, color: "#aaa" }}>Select Camera</label>
