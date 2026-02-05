@@ -150,7 +150,8 @@ function HostInner() {
     }
   }, [call, accepted]);
 
-  const visibleCallers = participants.filter((p) => !p.userId.startsWith("program") && p.userId !== "host");
+  // const visibleCallers = participants.filter((p) => !p.userId.startsWith("program") && p.userId !== "host");
+  const visibleCallers = participants.filter((p) => !p.userId.startsWith("program"));
   const hasCaller = visibleCallers.length > 0;
 
   if (!accepted) {
