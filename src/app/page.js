@@ -176,7 +176,7 @@ function HostInner() {
       <header style={{ display: "flex", justifyContent: "space-between", marginBottom: 30 }}>
         <h1 style={{ margin: 0, color: "#555" }}>🎥 <span style={{ color: "#fff" }}>GALLERY</span> CONTROL</h1>
         <div style={{ background: "#111", padding: "10px 20px", borderRadius: "8px", border: "1px solid #222" }}>
-          Active Callers: {visibleCallers.length}
+          Active Callers: {visibleCallers.length - 1}
         </div>
       </header>
 
