@@ -42,16 +42,25 @@ export default function CallerPage() {
 }
 
 function CallerInner({ call, joined, setJoined }) {
-  const { useParticipants, useLocalParticipant } = useCallStateHooks();
+  const {
+    useParticipants,
+    useLocalParticipant,
+    useMicrophoneState,
+    useCameraState
+  } = useCallStateHooks();
+
   const participants = useParticipants();
   const self = useLocalParticipant();
   const host = participants.find((p) => p.userId === "host");
+
+  // Get Mute States
+  const { isMuted: micMuted } = useMicrophoneState();
+  const { isMuted: camMuted } = useCameraState();
 
   const [videoDevices, setVideoDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState("");
   const [audioLevel, setAudioLevel] = useState(0);
 
-  // 1. Load cameras and setup Audio Visualizer (iPad fix included)
   useEffect(() => {
     let audioContext;
     let analyser;
@@ -60,7 +69,6 @@ function CallerInner({ call, joined, setJoined }) {
 
     async function setupDevices() {
       try {
-        // iPad/Safari fix: request permission first to unlock device labels
         let devices = await navigator.mediaDevices.enumerateDevices();
         if (devices.every((d) => !d.label)) {
           const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -72,7 +80,6 @@ function CallerInner({ call, joined, setJoined }) {
         setVideoDevices(cams);
         if (cams[0]) setSelectedDevice(cams[0].deviceId);
 
-        // Setup Audio Level Monitoring for Setup Screen
         micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         analyser = audioContext.createAnalyser();
@@ -102,7 +109,6 @@ function CallerInner({ call, joined, setJoined }) {
     };
   }, [joined]);
 
-  // 2. Start Call
   async function startCall() {
     try {
       await call.join({
@@ -126,9 +132,9 @@ function CallerInner({ call, joined, setJoined }) {
     return (
       <div style={{ padding: 30, background: "#1a1a1a", minHeight: "100vh", color: "white", fontFamily: "sans-serif" }}>
         <h2 style={{ marginBottom: 30 }}>📷 Media Setup</h2>
-        <label>To join your secure video call, allow access to camera and microphone. And keep you device Horizontal.</label>
+        <label>To join your secure video call, allow access to camera and microphone. And keep your device Horizontal.</label>
 
-        <div style={{ marginBottom: 25 }}>
+        <div style={{ marginBottom: 25, marginTop: 20 }}>
           <label style={{ display: "block", marginBottom: 10, color: "#aaa" }}>Select Camera</label>
           <select
             style={{ width: "100%", maxWidth: 400, padding: 12, borderRadius: 8, border: "1px solid #444", background: "#333", color: "white" }}
@@ -157,7 +163,7 @@ function CallerInner({ call, joined, setJoined }) {
 
   // --- RENDER: IN-CALL SCREEN ---
   return (
-    <div style={{ padding: 10, background: "black", minHeight: "100vh", color: "white" }}>
+    <div style={{ padding: 10, background: "black", minHeight: "100vh", color: "white", position: "relative" }}>
       <div className="video-grid">
         {/* HOST */}
         <div className="video-tile">
@@ -180,8 +186,38 @@ function CallerInner({ call, joined, setJoined }) {
             ) : (
               <div className="placeholder">Starting camera…</div>
             )}
+            {/* Overlay if Camera is muted */}
+            {camMuted && (
+              <div className="camera-off-overlay">
+                <span>Camera Off</span>
+              </div>
+            )}
           </div>
         </div>
+      </div>
+
+      {/* --- MUTE CONTROLS BAR --- */}
+      <div className="controls-bar">
+        <button
+          onClick={() => call.microphone.toggle()}
+          className={`control-btn ${micMuted ? "muted" : ""}`}
+        >
+          {micMuted ? "🎤 Unmute" : "🎤 Mute"}
+        </button>
+
+        <button
+          onClick={() => call.camera.toggle()}
+          className={`control-btn ${camMuted ? "muted" : ""}`}
+        >
+          {camMuted ? "📷 Turn On" : "📷 Stop Video"}
+        </button>
+
+        <button
+          onClick={() => window.location.reload()}
+          className="control-btn leave"
+        >
+          🚪 Leave
+        </button>
       </div>
 
       <style jsx>{`
@@ -189,7 +225,7 @@ function CallerInner({ call, joined, setJoined }) {
           display: flex;
           flex-direction: column;
           gap: 10px;
-          height: calc(100vh - 60px);
+          height: calc(100vh - 100px); /* Adjusted for control bar */
         }
         .video-tile {
           flex: 1;
@@ -210,17 +246,53 @@ function CallerInner({ call, joined, setJoined }) {
           position: relative;
         }
         .placeholder {
-          display: grid;
-          place-items: center;
-          height: 100%;
-          color: #444;
+          display: grid; place-items: center; height: 100%; color: #444;
+        }
+        .camera-off-overlay {
+          position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+          background: #111; display: grid; place-items: center; color: #555;
+          font-weight: bold;
         }
 
-        /* Landscape/Tablet View */
+        /* Controls Styles */
+        .controls-bar {
+          position: absolute;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          gap: 15px;
+          background: rgba(30, 30, 30, 0.85);
+          padding: 10px 20px;
+          border-radius: 40px;
+          backdrop-filter: blur(10px);
+          border: 1px solid #333;
+        }
+        .control-btn {
+          background: #444;
+          color: white;
+          border: none;
+          padding: 10px 18px;
+          border-radius: 20px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 600;
+          white-space: nowrap;
+          transition: 0.2s;
+        }
+        .control-btn.muted {
+          background: #ff4444;
+        }
+        .control-btn.leave {
+          background: #333;
+          border: 1px solid #555;
+        }
+        .control-btn:active {
+          transform: scale(0.95);
+        }
+
         @media (min-width: 768px) or (orientation: landscape) {
-          .video-grid {
-            flex-direction: row;
-          }
+          .video-grid { flex-direction: row; }
         }
       `}</style>
     </div>
