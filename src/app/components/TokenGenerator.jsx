@@ -48,7 +48,7 @@ export default function TokenGeneratorWithDuration({
 
     const callerUrl = useMemo(() => {
         if (!token || !baseUrl) return "";
-        return `${baseUrl}/caller?token=${encodeURIComponent(token)}`;
+        return `${baseUrl}/caller-with-token?token=${encodeURIComponent(token)}`;
     }, [token, baseUrl]);
 
     function copyUrl() {
