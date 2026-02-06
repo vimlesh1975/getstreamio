@@ -272,18 +272,28 @@ function HostInner() {
 
       <style jsx>{`
         /* Setup & Typography */
-        :global(body) {
-          margin: 0;
-          background-color: #0f111a;
-          color: #e2e8f0;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
+       :global(body) {
+  margin: 0;
+  background: linear-gradient(
+    180deg,
+    #f1f5f9 0%,
+    #e5e7eb 100%
+  );
+  color: #0f172a;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
 
-        .dashboard-container {
-          padding: 30px;
-          min-height: 100vh;
-          background: radial-gradient(circle at top left, #1a1c2c 0%, #0f111a 100%);
-        }
+
+    .dashboard-container {
+  padding: 30px;
+  min-height: 100vh;
+  background: linear-gradient(
+    135deg,
+    #f8fafc 0%,
+    #eef2f7 100%
+  );
+}
+
 
         /* Onboarding */
         .onboarding-screen {
@@ -314,14 +324,15 @@ function HostInner() {
         .start-btn:hover:not(:disabled) { transform: scale(1.05); background: #0080ff; }
 
         /* Header */
-        .main-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 40px;
-          border-bottom: 1px solid rgba(255,255,255,0.1);
-          padding-bottom: 20px;
-        }
+       .main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #cbd5e1;
+}
+
         .brand { display: flex; align-items: center; gap: 15px; }
         .brand h1 { font-size: 1.2rem; letter-spacing: 2px; margin: 0; color: #64748b; }
         .brand h1 span { color: #fff; }
@@ -341,18 +352,18 @@ function HostInner() {
           gap: 25px;
         }
 
-        .caller-card {
-          background: #161925;
-          border-radius: 12px;
-          border: 1px solid #2d3748;
-          padding: 12px;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          position: relative;
-        }
-        .caller-card.is-live {
-          border-color: #ef4444;
-          box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
-        }
+       .caller-card {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+       .caller-card.is-live {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239,68,68,0.4);
+}
+
 
         .card-header {
           display: flex;
@@ -370,13 +381,11 @@ function HostInner() {
         }
 
         /* Video Area */
-        .video-viewport {
-          position: relative;
-          aspect-ratio: 16/9;
-          background: #000;
-          border-radius: 8px;
-          overflow: hidden;
-        }
+       .video-viewport {
+  background: #020617;
+  border-radius: 10px;
+}
+
         .vu-meter-vertical {
           position: absolute;
           right: 8px;
@@ -397,30 +406,32 @@ function HostInner() {
           gap: 8px;
           margin-top: 15px;
         }
-        .take-button {
-          background: #1e293b;
-          border: 1px solid #334155;
-          color: #94a3b8;
-          padding: 12px;
-          border-radius: 6px;
-          font-weight: bold;
-          font-size: 0.75rem;
-          cursor: pointer;
-        }
-        .take-button:hover { background: #334155; color: #fff; }
-        .take-button.active {
-          background: #ef4444;
-          border-color: #ef4444;
-          color: white;
-        }
+       .take-button {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+}
+.take-button:hover {
+  background: #e2e8f0;
+}
+.take-button.active {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
+}
+
 
         /* Footer & Caspar */
-        .caspar-controls {
-          margin-top: 60px;
-          background: rgba(0,0,0,0.3);
-          padding: 20px;
-          border-radius: 12px;
-        }
+       .caspar-controls {
+  margin-top: 10px;
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  max-width:500px;
+  max-height:100px;
+}
+
         .caspar-controls h3 { font-size: 0.8rem; color: #475569; margin-bottom: 15px; }
         .caspar-grid { display: flex; gap: 10px; }
         .caspar-btn {

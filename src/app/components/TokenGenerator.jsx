@@ -61,7 +61,7 @@ export default function TokenGeneratorWithDuration({
                 padding: 16,
                 border: "1px solid #333",
                 borderRadius: 8,
-                background: "#111",
+                background: "#817f7f",
                 color: "white",
                 maxWidth: 440,
             }}
