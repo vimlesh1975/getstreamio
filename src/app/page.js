@@ -10,6 +10,8 @@ import {
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/stream";
 
+import TokenGenerator from "./components/TokenGenerator";
+
 /**
  * API utility to trigger CasparCG actions
  */
@@ -251,6 +253,8 @@ function HostInner() {
             </button>
           ))}
         </div>
+
+
       </footer>
 
       <style jsx>{`
@@ -424,6 +428,17 @@ function HostInner() {
 
         :global(.str-video__participant-details) { display: none !important; }
       `}</style>
+
+      <TokenGenerator
+        defaultUserId={`caller-${Date.now()}`}
+        onTokenGenerated={(token, userId) => {
+          console.log("Generated token for:", userId);
+          // later:
+          // - create invite URL
+          // - copy to clipboard
+          // - send to caller
+        }}
+      />
     </div>
   );
 }
