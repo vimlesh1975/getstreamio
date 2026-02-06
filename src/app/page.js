@@ -71,29 +71,42 @@ function ProgramPreviewGrid() {
 
   const getParticipant = (userId) => participants.find((p) => p.userId === userId);
 
-  return (
-    <div style={{ marginTop: 30, borderTop: "1px solid #333", paddingTop: 20 }}>
-      <h3>🎬 Program Previews</h3>
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-        {["program1", "program2", "program3", "program4"].map((key) => {
-          const userId = programs[key];
-          const participant = getParticipant(userId);
-          return (
-            <div key={key} style={{ width: 180, background: "#000", border: "2px solid #222", padding: 4, borderRadius: 8 }}>
-              <div style={{ color: "#888", fontSize: 10, textAlign: "center", marginBottom: 4 }}>{key.toUpperCase()}</div>
-              <div style={{ height: 100, background: "#050505", borderRadius: 4, overflow: "hidden" }}>
-                {participant ? (
-                  <ParticipantView participant={participant} muted drawParticipantInfo={false} style={{ width: "100%", height: "100%" }} />
-                ) : (
-                  <div style={{ height: "100%", display: "grid", placeItems: "center", fontSize: 10, color: "#333" }}>OFF AIR</div>
-                )}
+  return (<>
+    <div style={{ display: 'flex' }}>
+      <div style={{ marginTop: 30, borderTop: "1px solid #333", paddingTop: 20 }}>
+        <h3>🎬 Program Previews</h3>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          {["program1", "program2", "program3", "program4"].map((key) => {
+            const userId = programs[key];
+            const participant = getParticipant(userId);
+            return (
+              <div key={key} style={{ width: 180, background: "#000", border: "2px solid #222", padding: 4, borderRadius: 8 }}>
+                <div style={{ color: "#888", fontSize: 10, textAlign: "center", marginBottom: 4 }}>{key.toUpperCase()}</div>
+                <div style={{ height: 100, background: "#050505", borderRadius: 4, overflow: "hidden" }}>
+                  {participant ? (
+                    <ParticipantView participant={participant} muted drawParticipantInfo={false} style={{ width: "100%", height: "100%" }} />
+                  ) : (
+                    <div style={{ height: "100%", display: "grid", placeItems: "center", fontSize: 10, color: "#333" }}>OFF AIR</div>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+      </div>
+      <div>
+        <TokenGenerator
+          defaultUserId={`caller-${Date.now()}`}
+          callerPath="/caller"
+          onTokenGenerated={(token, userId) => {
+            console.log("Token generated:", userId);
+          }}
+        />
+
       </div>
     </div>
-  );
+
+  </>);
 }
 
 /**
@@ -429,16 +442,7 @@ function HostInner() {
         :global(.str-video__participant-details) { display: none !important; }
       `}</style>
 
-      <TokenGenerator
-        defaultUserId={`caller-${Date.now()}`}
-        onTokenGenerated={(token, userId) => {
-          console.log("Generated token for:", userId);
-          // later:
-          // - create invite URL
-          // - copy to clipboard
-          // - send to caller
-        }}
-      />
+
     </div>
   );
 }

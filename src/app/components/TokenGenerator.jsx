@@ -1,15 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 
-export default function TokenGenerator({
+export default function TokenGeneratorWithDuration({
     defaultUserId = "",
-    onTokenGenerated,
 }) {
     const [userId, setUserId] = useState(defaultUserId);
+    const [duration, setDuration] = useState(10); // minutes
     const [token, setToken] = useState("");
+    const [expiresAt, setExpiresAt] = useState(null);
+    const [baseUrl, setBaseUrl] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+
+    useEffect(() => {
+        setBaseUrl(window.location.origin);
+    }, []);
 
     async function generateToken() {
         if (!userId) return;
@@ -19,22 +25,34 @@ export default function TokenGenerator({
         setToken("");
 
         try {
-            const res = await fetch("/api/token", {
+            const res = await fetch("/api/token-with-duration", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId }),
+                body: JSON.stringify({
+                    userId,
+                    durationMinutes: duration,
+                }),
             });
 
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Failed");
 
             setToken(data.token);
-            onTokenGenerated?.(data.token, userId);
+            setExpiresAt(data.expiresAt);
         } catch (err) {
             setError(err.message);
         } finally {
             setLoading(false);
         }
+    }
+
+    const callerUrl = useMemo(() => {
+        if (!token || !baseUrl) return "";
+        return `${baseUrl}/caller?token=${encodeURIComponent(token)}`;
+    }, [token, baseUrl]);
+
+    function copyUrl() {
+        navigator.clipboard.writeText(callerUrl);
     }
 
     return (
@@ -45,48 +63,85 @@ export default function TokenGenerator({
                 borderRadius: 8,
                 background: "#111",
                 color: "white",
-                maxWidth: 420,
+                maxWidth: 440,
             }}
         >
-            <h3 style={{ marginTop: 0 }}>Generate Caller Token</h3>
+            <h3 style={{ marginTop: 0 }}>
+                Generate Caller Token
+            </h3>
 
+            {/* USER ID */}
             <input
                 value={userId}
                 onChange={(e) => setUserId(e.target.value)}
                 placeholder="caller-1"
-                style={{
-                    width: "100%",
-                    padding: 10,
-                    marginBottom: 8,
-                }}
+                style={{ width: "80%", padding: 10, marginBottom: 8 }}
             />
 
+            {/* DURATION */}
+
+            <select
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                style={{
+                    width: "80%",
+                    padding: 8,
+                    marginBottom: 12,
+                }}
+            >
+                <option value={1}>1 minutes</option>
+                <option value={5}>5 minutes</option>
+                <option value={10}>10 minutes</option>
+                <option value={15}>15 minutes</option>
+                <option value={30}>30 minutes</option>
+                <option value={60}>1 hour</option>
+            </select>
+
             <button
-                type="button"   // 👈 IMPORTANT
+                type="button"
                 onClick={generateToken}
                 disabled={loading || !userId}
+                style={{ marginBottom: 12 }}
             >
                 {loading ? "Generating…" : "Generate Token"}
             </button>
 
-
             {error && (
-                <div style={{ color: "red", marginTop: 8 }}>
+                <div style={{ color: "red", marginBottom: 8 }}>
                     {error}
                 </div>
             )}
 
             {token && (
                 <>
-                    <div style={{ marginTop: 8, fontSize: 12 }}>
-                        Token:
+                    {/* CALLER URL */}
+                    <div style={{ fontSize: 12, marginBottom: 4 }}>
+                        Caller URL
                     </div>
-                    <textarea
-                        value={token}
+                    <input
+                        value={callerUrl}
                         readOnly
-                        rows={4}
-                        style={{ width: "100%" }}
+                        style={{
+                            width: "80%",
+                            padding: 8,
+                            marginBottom: 8,
+                        }}
                     />
+
+                    <button
+                        type="button"
+                        onClick={copyUrl}
+                        style={{ marginBottom: 8 }}
+                    >
+                        Copy URL
+                    </button>
+
+                    {expiresAt && (
+                        <div style={{ fontSize: 12, opacity: 0.7 }}>
+                            Expires at:{" "}
+                            {new Date(expiresAt * 1000).toLocaleString()}
+                        </div>
+                    )}
                 </>
             )}
         </div>
