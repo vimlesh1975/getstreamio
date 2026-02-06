@@ -94,7 +94,7 @@ function ProgramPreviewGrid() {
           })}
         </div>
       </div>
-      <div>
+      <div style={{ marginTop: 30, borderTop: "1px solid #333", paddingTop: 20 }}>
         <TokenGenerator
           defaultUserId={`caller-${Date.now()}`}
           callerPath="/caller"

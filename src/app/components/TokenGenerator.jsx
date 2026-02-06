@@ -89,12 +89,14 @@ export default function TokenGeneratorWithDuration({
                     marginBottom: 12,
                 }}
             >
+                <option value={0.2}>10 second</option>
                 <option value={1}>1 minutes</option>
                 <option value={5}>5 minutes</option>
                 <option value={10}>10 minutes</option>
                 <option value={15}>15 minutes</option>
                 <option value={30}>30 minutes</option>
                 <option value={60}>1 hour</option>
+                <option value={300}>5 hour</option>
             </select>
 
             <button
