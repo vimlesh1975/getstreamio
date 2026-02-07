@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "br": "npm run build && npm start",
     "lint": "eslint"
   },
   "dependencies": {
