@@ -37,40 +37,44 @@ function ProgramPreviewGrid() {
   const custom = useCallCustomData();
   const programs = custom?.programs || {};
 
+
+
   const getParticipant = (userId) => participants.find((p) => p.userId === userId);
 
   return (
-    <div style={{ display: 'flex', gap: '40px', marginTop: 30, borderTop: "1px solid #cbd5e1", paddingTop: 20 }}>
+    <div style={{ display: 'flex', gap: '40px', marginTop: 30, borderTop: "1px solid #cbd5e1", paddingTop: 20, }}>
       <div>
         <h3 style={{ color: '#475569', fontSize: '0.9rem', marginBottom: 15 }}>🎬 PROGRAM PREVIEWS</h3>
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          {["program1", "program2", "program3", "program4"].map((key) => {
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", maxWidth: 850 }}>
+          {["program1", "program2", "program3", "program4"].map((key, i) => {
             const userId = programs[key];
             const participant = getParticipant(userId);
             return (
               <div key={key} style={{ width: 180, background: "#000", border: "2px solid #334155", padding: 4, borderRadius: 8 }}>
                 <div style={{ color: "#94a3b8", fontSize: 10, textAlign: "center", marginBottom: 4, fontWeight: 'bold' }}>{key.toUpperCase()}</div>
-                <div style={{ height: 100, background: "#050505", borderRadius: 4, overflow: "hidden" }}>
-                  {participant ? (
+                <div style={{ height: 100, background: "#050505", borderRadius: 4, overflow: "hidden1" }}>
+                  {participant && (<>
                     <ParticipantView participant={participant} muted drawParticipantInfo={false} style={{ width: "100%", height: "100%" }} />
-                  ) : (
-                    <div style={{ height: "100%", display: "grid", placeItems: "center", fontSize: 10, color: "#475569" }}>OFF AIR</div>
-                  )}
+                    <button style={{ color: 'red' }}
+
+                      onClick={() => endpoint({
+                        action: "endpoint",
+                        command: `play ${i + 1}-1 [html] ${window.location.origin}/program?out=${i + 1}`,
+                      })}
+                    >
+                      Initialise CH {i + 1}
+                    </button>
+                  </>)
+                  }
                 </div>
               </div>
             );
           })}
         </div>
       </div>
-      <div>
-        <TokenGenerator
-          defaultUserId={`caller-${Date.now()}`}
-          callerPath="/caller"
-          onTokenGenerated={(token, userId) => {
-            console.log("Token generated:", userId);
-          }}
-        />
-      </div>
+
+
+
     </div>
   );
 }
@@ -108,6 +112,9 @@ function HostInner() {
   const custom = useCallCustomData();
   const programs = custom?.programs || {};
   const [accepted, setAccepted] = useState(false);
+
+  const [showTokenGenerator, setShowTokenGenerator] = useState(false);
+
 
   async function setLive(programKey, userId) {
     await fetch("/api/set-live-user", {
@@ -150,16 +157,7 @@ function HostInner() {
 
   return (
     <div className="dashboard-container">
-      <header className="main-header">
-        <div className="brand">
-          <div className="live-indicator">REC</div>
-          <h1 style={{ color: '#1e293b' }}>GALLERY <span style={{ color: '#64748b' }}>CONTROL</span></h1>
-        </div>
-        <div className="stats-badge">
-          CONNECTED SOURCES: {visibleCallers.length}
-        </div>
-      </header>
-
+      <span style={{ color: '#64748b' }}>DD Caller</span>  CONNECTED SOURCES: {visibleCallers.length}
       <div className="gallery-grid">
         {visibleCallers.map((caller) => {
           const isLive = Object.values(programs).includes(caller.userId);
@@ -208,29 +206,31 @@ function HostInner() {
             </div>
           );
         })}
+
+      </div>
+      <div style={{ display: 'flex' }}>
+        <div>
+          <ProgramPreviewGrid />
+        </div>
+        <div>
+          <div>
+            <button onClick={() => {
+              setShowTokenGenerator(!showTokenGenerator);
+            }}>{showTokenGenerator ? 'Hide TokenGenerator' : 'show TokenGenerator'} </button>
+          </div>
+          {showTokenGenerator &&
+            <div>
+              <TokenGenerator
+                defaultUserId={`caller-${Date.now()}`}
+                callerPath="/caller"
+                onTokenGenerated={(userId) => {
+                  console.log("Token generated:", userId);
+                }}
+              />
+            </div>}
+        </div>
       </div>
 
-      <ProgramPreviewGrid />
-
-      <footer className="caspar-footer">
-        <div className="caspar-grid">
-          {[1, 2, 3, 4].map(num => (
-            <button
-              key={num}
-              className="caspar-btn"
-              onClick={() => endpoint({
-                action: "endpoint",
-                command: `play ${num}-1 [html] ${window.location.origin}/program?out=${num}`,
-              })}
-            >
-              RESET CH {num}
-            </button>
-          ))}
-          <button className="download-btn" onClick={() => window.open("https://drive.google.com/file/d/1sOYjJeLWChslTD-p1eXXcMA8tVGMJQsD/view?usp=drive_link", "_blank")}>
-            GET SERVER
-          </button>
-        </div>
-      </footer>
 
       <style jsx>{`
         :global(body) {
@@ -386,6 +386,7 @@ function HostInner() {
           padding: 20px;
           border-radius: 12px;
           border: 1px solid #e2e8f0;
+          max-width:550px
         }
           button:hover {
   background-color: #000000 !important;

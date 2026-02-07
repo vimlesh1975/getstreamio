@@ -148,6 +148,10 @@ export default function TokenGeneratorWithDuration({
                         Open URL for test
                     </button>
 
+                    <button className="download-btn" onClick={() => window.open("https://drive.google.com/file/d/1sOYjJeLWChslTD-p1eXXcMA8tVGMJQsD/view?usp=drive_link", "_blank")}>
+                        GET SERVER
+                    </button>
+
                     {expiresAt && (
                         <div style={{ fontSize: 12, opacity: 0.7 }}>
                             Expires at:{" "}
