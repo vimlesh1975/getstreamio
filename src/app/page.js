@@ -265,6 +265,10 @@ function HostInner() {
               RESET CH {num}
             </button>
           ))}
+
+          <button onClick={() => {
+            window.open("https://drive.google.com/file/d/1sOYjJeLWChslTD-p1eXXcMA8tVGMJQsD/view?usp=drive_link", "_blank");
+          }}>Download supported casparcg Server</button>
         </div>
 
 
