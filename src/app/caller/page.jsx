@@ -54,8 +54,8 @@ function CallerInner({ call, joined, setJoined }) {
   const host = participants.find((p) => p.userId === "host");
 
   // Get Mute States
-  const { isMuted: micMuted } = useMicrophoneState();
-  const { isMuted: camMuted } = useCameraState();
+  const { microphone, isMute } = useMicrophoneState();
+  const CameraState = useCameraState();
 
   // SDK Local Audio Level (Value between 0 and 1)
   const localAudioLevel = self?.audioLevel || 0;
@@ -197,15 +197,15 @@ function CallerInner({ call, joined, setJoined }) {
                   // If level is 0.1, result is ~0.4 (40% height)
                   height: `${Math.min(Math.pow(localAudioLevel, 0.4) * 100, 100)}%`,
 
-                  background: micMuted ? "#ff4444" : "#4caf50",
+                  background: isMute ? "#ff4444" : "#4caf50",
                   // Optional: Adds a glow when you are actually talking
-                  boxShadow: !micMuted && localAudioLevel > 0.01 ? "0 0 10px #4caf50" : "none",
+                  boxShadow: !isMute && localAudioLevel > 0.01 ? "0 0 10px #4caf50" : "none",
                   transition: "height 0.08s ease-out" // Fast but smooth
                 }}
               />
             </div>
 
-            {camMuted && (
+            {CameraState.camMute && (
               <div className="camera-off-overlay">
                 <span>Camera Off</span>
               </div>
@@ -217,17 +217,17 @@ function CallerInner({ call, joined, setJoined }) {
       {/* --- MUTE CONTROLS BAR --- */}
       <div className="controls-bar">
         <button
-          onClick={() => call.microphone.toggle()}
-          className={`control-btn ${micMuted ? "muted" : ""}`}
+          onClick={() => microphone.toggle()}
+          className={`control-btn ${isMute ? "muted" : ""}`}
         >
-          {micMuted ? "🎤 Unmute" : "🎤 Mute"}
+          {isMute ? "🎤 Unmute" : "🎤 Mute"}
         </button>
 
         <button
           onClick={() => call.camera.toggle()}
-          className={`control-btn ${camMuted ? "muted" : ""}`}
+          className={`control-btn ${CameraState.isMute ? "muted" : ""}`}
         >
-          {camMuted ? "📷 Turn On" : "📷 Stop Video"}
+          {CameraState.isMute ? "📷 Turn On" : "📷 Stop Video"}
         </button>
 
         <button

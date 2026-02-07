@@ -127,8 +127,9 @@ function CallerInner({ call, joined, setJoined, setError }) {
     const self = useLocalParticipant();
     const host = participants.find((p) => p.userId === "host");
 
-    const { isMuted: micMuted } = useMicrophoneState();
-    const { isMuted: camMuted } = useCameraState();
+    // Get Mute States
+    const { microphone, isMute } = useMicrophoneState();
+    const CameraState = useCameraState();
     const localAudioLevel = self?.audioLevel || 0;
 
     // 🎯 JOIN CALL WITH ERROR HANDLING
@@ -240,12 +241,12 @@ function CallerInner({ call, joined, setJoined, setError }) {
                                     Math.pow(localAudioLevel, 0.4) * 100,
                                     100
                                 )}%`,
-                                background: micMuted ? "red" : "#4caf50",
+                                background: isMute ? "red" : "#4caf50",
                             }}
                         />
                     </div>
 
-                    {camMuted && (
+                    {CameraState.camMute && (
                         <div
                             style={{
                                 position: "absolute",
@@ -272,10 +273,10 @@ function CallerInner({ call, joined, setJoined, setError }) {
                 }}
             >
                 <button onClick={() => call.microphone.toggle()}>
-                    {micMuted ? "🎤 Unmute" : "🎤 Mute"}
+                    {isMute ? "🎤 Unmute" : "🎤 Mute"}
                 </button>
                 <button onClick={() => call.camera.toggle()}>
-                    {camMuted ? "📷 Turn On" : "📷 Stop"}
+                    {CameraState.isMute ? "📷 Turn On" : "📷 Stop"}
                 </button>
                 <button onClick={() => window.location.reload()}>
                     🚪 Leave
