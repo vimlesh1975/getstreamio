@@ -138,6 +138,16 @@ export default function TokenGeneratorWithDuration({
                         Copy URL
                     </button>
 
+                    <button
+                        type="button"
+                        onClick={() => {
+                            window.open(callerUrl, "_blank");
+                        }}
+                        style={{ marginBottom: 8 }}
+                    >
+                        Open URL for test
+                    </button>
+
                     {expiresAt && (
                         <div style={{ fontSize: 12, opacity: 0.7 }}>
                             Expires at:{" "}
