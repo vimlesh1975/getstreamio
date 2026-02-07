@@ -156,6 +156,18 @@ export default function TokenGeneratorWithDuration({
                     )}
                 </>
             )}
+
+            <style jsx>{`
+       button:hover {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+      `}</style>
         </div>
     );
 }
+
+

@@ -21,44 +21,12 @@ const endpoint = async (str) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(str),
   };
-  fetch("/api/casparcg", requestOptions);
+  try {
+    await fetch("/api/casparcg", requestOptions);
+  } catch (e) {
+    console.error("CasparCG Error:", e);
+  }
 };
-
-/**
- * Format timestamp for the info table
- */
-function formatJoinedAt(joinedAt) {
-  if (!joinedAt?.seconds) return "-";
-  const ms =
-    Number(joinedAt.seconds) * 1000 +
-    Math.floor(Number(joinedAt.nanos || 0) / 1e6);
-  return new Date(ms).toLocaleString();
-}
-
-/**
- * Debug table for participant data (Optional use)
- */
-function ParticipantTable({ participant }) {
-  if (!participant) return null;
-  return (
-    <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 12, background: "#111", color: "#fff", marginTop: 10 }}>
-      <tbody>
-        <Row label="User ID" value={participant.userId} />
-        <Row label="Audio Level" value={participant.audioLevel.toFixed(4)} />
-        <Row label="Speaking" value={String(participant.isSpeaking)} />
-      </tbody>
-    </table>
-  );
-}
-
-function Row({ label, value }) {
-  return (
-    <tr>
-      <td style={{ border: "1px solid #333", padding: "4px", fontWeight: "bold", background: "#1b1b1b" }}>{label}</td>
-      <td style={{ border: "1px solid #333", padding: "4px" }}>{value}</td>
-    </tr>
-  );
-}
 
 /**
  * Previews for the 4 Program Channels
@@ -71,22 +39,22 @@ function ProgramPreviewGrid() {
 
   const getParticipant = (userId) => participants.find((p) => p.userId === userId);
 
-  return (<>
-    <div style={{ display: 'flex' }}>
-      <div style={{ marginTop: 30, borderTop: "1px solid #333", paddingTop: 20 }}>
-        <h3>🎬 Program Previews</h3>
+  return (
+    <div style={{ display: 'flex', gap: '40px', marginTop: 30, borderTop: "1px solid #cbd5e1", paddingTop: 20 }}>
+      <div>
+        <h3 style={{ color: '#475569', fontSize: '0.9rem', marginBottom: 15 }}>🎬 PROGRAM PREVIEWS</h3>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           {["program1", "program2", "program3", "program4"].map((key) => {
             const userId = programs[key];
             const participant = getParticipant(userId);
             return (
-              <div key={key} style={{ width: 180, background: "#000", border: "2px solid #222", padding: 4, borderRadius: 8 }}>
-                <div style={{ color: "#888", fontSize: 10, textAlign: "center", marginBottom: 4 }}>{key.toUpperCase()}</div>
+              <div key={key} style={{ width: 180, background: "#000", border: "2px solid #334155", padding: 4, borderRadius: 8 }}>
+                <div style={{ color: "#94a3b8", fontSize: 10, textAlign: "center", marginBottom: 4, fontWeight: 'bold' }}>{key.toUpperCase()}</div>
                 <div style={{ height: 100, background: "#050505", borderRadius: 4, overflow: "hidden" }}>
                   {participant ? (
                     <ParticipantView participant={participant} muted drawParticipantInfo={false} style={{ width: "100%", height: "100%" }} />
                   ) : (
-                    <div style={{ height: "100%", display: "grid", placeItems: "center", fontSize: 10, color: "#333" }}>OFF AIR</div>
+                    <div style={{ height: "100%", display: "grid", placeItems: "center", fontSize: 10, color: "#475569" }}>OFF AIR</div>
                   )}
                 </div>
               </div>
@@ -94,7 +62,7 @@ function ProgramPreviewGrid() {
           })}
         </div>
       </div>
-      <div style={{ marginTop: 30, borderTop: "1px solid #333", paddingTop: 20 }}>
+      <div>
         <TokenGenerator
           defaultUserId={`caller-${Date.now()}`}
           callerPath="/caller"
@@ -102,16 +70,11 @@ function ProgramPreviewGrid() {
             console.log("Token generated:", userId);
           }}
         />
-
       </div>
     </div>
-
-  </>);
+  );
 }
 
-/**
- * Main Host Page Export
- */
 export default function HostPage() {
   const userId = "host";
   const [client, setClient] = useState(null);
@@ -127,7 +90,7 @@ export default function HostPage() {
     })();
   }, []);
 
-  if (!client || !call) return <div style={{ background: "#000", height: "100vh", color: "white", padding: 20 }}>Initializing Host...</div>;
+  if (!client || !call) return <div style={{ background: "#0f172a", height: "100vh", color: "white", padding: 20 }}>Initializing Host...</div>;
 
   return (
     <StreamVideo client={client}>
@@ -138,9 +101,6 @@ export default function HostPage() {
   );
 }
 
-/**
- * Internal logic for the Host Monitor
- */
 function HostInner() {
   const call = useCall();
   const { useParticipants, useCallCustomData } = useCallStateHooks();
@@ -175,7 +135,7 @@ function HostInner() {
       <div className="onboarding-screen">
         <div className="glass-panel">
           <h1>🎙️ Studio Monitor</h1>
-          <p>Ready to manage the broadcast gallery?</p>
+          <p style={{ color: '#94a3b8' }}>Ready to manage the broadcast gallery?</p>
           <button
             className="start-btn"
             disabled={!hasCaller}
@@ -193,7 +153,7 @@ function HostInner() {
       <header className="main-header">
         <div className="brand">
           <div className="live-indicator">REC</div>
-          <h1>GALLERY <span>CONTROL</span></h1>
+          <h1 style={{ color: '#1e293b' }}>GALLERY <span style={{ color: '#64748b' }}>CONTROL</span></h1>
         </div>
         <div className="stats-badge">
           CONNECTED SOURCES: {visibleCallers.length}
@@ -202,8 +162,9 @@ function HostInner() {
 
       <div className="gallery-grid">
         {visibleCallers.map((caller) => {
-          // Check if this caller is currently live in ANY program
           const isLive = Object.values(programs).includes(caller.userId);
+          // Enhanced volume calculation for better visibility
+          const volSens = Math.sqrt(caller.audioLevel) * 100;
 
           return (
             <div key={caller.sessionId} className={`caller-card ${isLive ? 'is-live' : ''}`}>
@@ -221,12 +182,13 @@ function HostInner() {
                   style={{ width: "100%", height: "100%" }}
                 />
 
+                {/* THE VU METER */}
                 <div className="vu-meter-vertical">
                   <div
                     className="vu-level"
                     style={{
-                      height: `${Math.min(caller.audioLevel * 400, 100)}%`,
-                      backgroundColor: caller.audioLevel > 0.05 ? '#40ff5a' : '#555'
+                      height: `${Math.min(volSens, 100)}%`,
+                      backgroundColor: caller.audioLevel > 0.005 ? '#22c55e' : '#475569'
                     }}
                   />
                 </div>
@@ -250,8 +212,7 @@ function HostInner() {
 
       <ProgramPreviewGrid />
 
-      <footer className="caspar-controls">
-        <h3>SYSTEM ENGINE (CASPARCG)</h3>
+      <footer className="caspar-footer">
         <div className="caspar-grid">
           {[1, 2, 3, 4].map(num => (
             <button
@@ -265,109 +226,91 @@ function HostInner() {
               RESET CH {num}
             </button>
           ))}
-
-          <button onClick={() => {
-            window.open("https://drive.google.com/file/d/1sOYjJeLWChslTD-p1eXXcMA8tVGMJQsD/view?usp=drive_link", "_blank");
-          }}>Download supported casparcg Server</button>
+          <button className="download-btn" onClick={() => window.open("https://drive.google.com/file/d/1sOYjJeLWChslTD-p1eXXcMA8tVGMJQsD/view?usp=drive_link", "_blank")}>
+            GET SERVER
+          </button>
         </div>
-
-
       </footer>
 
       <style jsx>{`
-        /* Setup & Typography */
-       :global(body) {
-  margin: 0;
-  background: linear-gradient(
-    180deg,
-    #f1f5f9 0%,
-    #e5e7eb 100%
-  );
-  color: #0f172a;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-}
+        :global(body) {
+          margin: 0;
+          background: #f1f5f9;
+          color: #0f172a;
+          font-family: 'Inter', system-ui, sans-serif;
+        }
 
+        .dashboard-container {
+          padding: 30px;
+          min-height: 100vh;
+        }
 
-    .dashboard-container {
-  padding: 30px;
-  min-height: 100vh;
-  background: linear-gradient(
-    135deg,
-    #f8fafc 0%,
-    #eef2f7 100%
-  );
-}
-
-
-        /* Onboarding */
         .onboarding-screen {
           height: 100vh;
           display: grid;
           place-items: center;
-          background: #090a0f;
+          background: #0f172a;
+          color: white;
         }
+
         .glass-panel {
           padding: 40px;
-          background: rgba(255, 255, 255, 0.03);
+          background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: 24px;
           text-align: center;
-          backdrop-filter: blur(10px);
+          backdrop-filter: blur(12px);
         }
+
         .start-btn {
           margin-top: 20px;
-          padding: 16px 40px;
-          background: #0070f3;
+          padding: 14px 32px;
+          background: #3b82f6;
           color: white;
           border: none;
-          border-radius: 12px;
-          font-weight: bold;
+          border-radius: 8px;
+          font-weight: 600;
           cursor: pointer;
-          transition: transform 0.2s;
         }
-        .start-btn:hover:not(:disabled) { transform: scale(1.05); background: #0080ff; }
 
-        /* Header */
-       .main-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 40px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #cbd5e1;
-}
+        .main-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 30px;
+          padding-bottom: 20px;
+          border-bottom: 1px solid #cbd5e1;
+        }
 
-        .brand { display: flex; align-items: center; gap: 15px; }
-        .brand h1 { font-size: 1.2rem; letter-spacing: 2px; margin: 0; color: #64748b; }
-        .brand h1 span { color: #fff; }
+        .brand { display: flex; align-items: center; gap: 12px; }
         .live-indicator {
           background: #ef4444;
-          padding: 4px 12px;
+          color: white;
+          padding: 2px 8px;
           border-radius: 4px;
-          font-size: 0.7rem;
-          font-weight: 900;
+          font-size: 0.65rem;
+          font-weight: 800;
           animation: blink 2s infinite;
         }
 
-        /* Gallery Grid */
         .gallery-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-          gap: 25px;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 20px;
         }
 
-       .caller-card {
-  background: #ffffff;
-  border-radius: 14px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-}
+        .caller-card {
+          background: white;
+          padding: 15px;
+          border-radius: 12px;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
 
-       .caller-card.is-live {
-  border-color: #ef4444;
-  box-shadow: 0 0 0 2px rgba(239,68,68,0.4);
-}
-
+        .caller-card.is-live {
+          border: 2px solid #ef4444;
+          background: #fff1f2;
+        }
 
         .card-header {
           display: flex;
@@ -375,89 +318,110 @@ function HostInner() {
           align-items: center;
           margin-bottom: 10px;
         }
-        .user-id-label { font-family: monospace; color: #94a3b8; font-size: 0.9rem; }
-        .live-pill {
-          background: #ef4444;
-          font-size: 10px;
-          font-weight: bold;
-          padding: 2px 8px;
-          border-radius: 10px;
-        }
 
-        /* Video Area */
-       .video-viewport {
-  background: #020617;
-  border-radius: 10px;
-}
+        .user-id-label { font-size: 0.8rem; font-weight: 600; color: #64748b; }
+
+        .audio-active-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #cbd5e1;
+        }
+        .audio-active-dot.on { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+
+        .video-viewport {
+          background: #000;
+          aspect-ratio: 16/9;
+          border-radius: 8px;
+          overflow: hidden;
+          position: relative; /* CRITICAL for absolute children */
+        }
 
         .vu-meter-vertical {
           position: absolute;
-          right: 8px;
+          right: 10px;
           top: 10px;
           bottom: 10px;
-          width: 4px;
-          background: rgba(0,0,0,0.5);
-          border-radius: 2px;
+          width: 6px;
+          background: rgba(0,0,0,0.6);
+          border-radius: 10px;
           display: flex;
           flex-direction: column-reverse;
+          z-index: 10; /* Ensures it's above the video */
+          border: 1px solid rgba(255,255,255,0.1);
         }
-        .vu-level { width: 100%; border-radius: 2px; transition: height 0.1s ease; }
 
-        /* Controls */
+        .vu-level {
+          width: 100%;
+          border-radius: 10px;
+          transition: height 0.05s ease, background-color 0.2s;
+        }
+
         .take-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 8px;
-          margin-top: 15px;
+          gap: 6px;
+          margin-top: 12px;
         }
-       .take-button {
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  color: #0f172a;
-}
-.take-button:hover {
-  background: #e2e8f0;
-}
-.take-button.active {
-  background: #ef4444;
-  border-color: #ef4444;
-  color: white;
-}
 
-
-        /* Footer & Caspar */
-       .caspar-controls {
-  margin-top: 10px;
-  background: #ffffff;
-  padding: 20px;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  max-width:500px;
-  max-height:100px;
-}
-
-        .caspar-controls h3 { font-size: 0.8rem; color: #475569; margin-bottom: 15px; }
-        .caspar-grid { display: flex; gap: 10px; }
-        .caspar-btn {
-          background: transparent;
-          border: 1px solid #334155;
-          color: #64748b;
-          padding: 8px 16px;
+        .take-button {
+          padding: 8px;
+          font-size: 0.75rem;
+          font-weight: bold;
           border-radius: 6px;
+          border: 1px solid #e2e8f0;
+          background: #f8fafc;
           cursor: pointer;
-          font-size: 0.8rem;
         }
-        .caspar-btn:hover { border-color: #0070f3; color: #0070f3; }
+
+        .take-button.active {
+          background: #ef4444;
+          color: white;
+          border-color: #ef4444;
+        }
+
+        .caspar-footer {
+          margin-top: 40px;
+          background: white;
+          padding: 20px;
+          border-radius: 12px;
+          border: 1px solid #e2e8f0;
+        }
+          button:hover {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+        .caspar-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+        .caspar-btn {
+          padding: 6px 12px;
+          font-size: 0.7rem;
+          border: 1px solid #cbd5e1;
+          background: white;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+        
+        .download-btn {
+          padding: 6px 12px;
+          font-size: 0.7rem;
+          background: #0f172a;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+        }
 
         @keyframes blink {
           0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
+          50% { opacity: 0.3; }
         }
 
         :global(.str-video__participant-details) { display: none !important; }
       `}</style>
-
-
     </div>
   );
 }
