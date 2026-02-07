@@ -55,7 +55,7 @@ function ProgramPreviewGrid() {
                 <div style={{ height: 100, background: "#050505", borderRadius: 4, overflow: "hidden1" }}>
                   {participant && (<>
                     <ParticipantView participant={participant} muted drawParticipantInfo={false} style={{ width: "100%", height: "100%" }} />
-                    <button style={{ color: 'red' }}
+                    <button style={{ color: 'black' }}
 
                       onClick={() => endpoint({
                         action: "endpoint",
