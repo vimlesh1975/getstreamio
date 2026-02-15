@@ -4,9 +4,10 @@ import { useState, useEffect, useMemo } from "react";
 
 export default function TokenGeneratorWithDuration({
     defaultUserId = "",
+    roomid = "room-1" // 👈 1. Added roomid prop
 }) {
     const [userId, setUserId] = useState(defaultUserId);
-    const [duration, setDuration] = useState(10); // minutes
+    const [duration, setDuration] = useState(10);
     const [token, setToken] = useState("");
     const [expiresAt, setExpiresAt] = useState(null);
     const [baseUrl, setBaseUrl] = useState("");
@@ -46,10 +47,12 @@ export default function TokenGeneratorWithDuration({
         }
     }
 
+    // 👈 2. Updated to include the dynamic room path
     const callerUrl = useMemo(() => {
         if (!token || !baseUrl) return "";
-        return `${baseUrl}/caller-with-token?token=${encodeURIComponent(token)}`;
-    }, [token, baseUrl]);
+        // Sends them to /caller/[roomid] with the token as a query param
+        return `${baseUrl}/caller/${roomid}?token=${encodeURIComponent(token)}`;
+    }, [token, baseUrl, roomid]);
 
     function copyUrl() {
         navigator.clipboard.writeText(callerUrl);
@@ -67,58 +70,52 @@ export default function TokenGeneratorWithDuration({
             }}
         >
             <h3 style={{ marginTop: 0 }}>
-                Generate Caller Token
+                Generate Token for {roomid.replace(/_/g, " ")}
             </h3>
 
-            {/* USER ID */}
             <input
                 value={userId}
                 onChange={(e) => setUserId(e.target.value)}
-                placeholder="caller-1"
-                style={{ width: "80%", padding: 10, marginBottom: 8 }}
+                placeholder="caller-name"
+                style={{ width: "80%", padding: 10, marginBottom: 8, color: 'black' }}
             />
-
-            {/* DURATION */}
 
             <select
                 value={duration}
-                onChange={(e) => setDuration(e.target.value)}
+                onChange={(e) => setDuration(Number(e.target.value))}
                 style={{
                     width: "80%",
                     padding: 8,
                     marginBottom: 12,
+                    color: 'black'
                 }}
             >
-                <option value={0.2}>10 second</option>
-                <option value={1}>1 minutes</option>
-                <option value={5}>5 minutes</option>
+                <option value={0.16}>10 seconds</option>
+                <option value={1}>1 minute</option>
                 <option value={10}>10 minutes</option>
-                <option value={15}>15 minutes</option>
-                <option value={30}>30 minutes</option>
                 <option value={60}>1 hour</option>
-                <option value={300}>5 hour</option>
+                <option value={300}>5 hours</option>
             </select>
 
             <button
                 type="button"
                 onClick={generateToken}
                 disabled={loading || !userId}
-                style={{ marginBottom: 12 }}
+                style={{ marginBottom: 12, display: 'block' }}
             >
-                {loading ? "Generating…" : "Generate Token"}
+                {loading ? "Generating…" : "Generate Invite Link"}
             </button>
 
             {error && (
-                <div style={{ color: "red", marginBottom: 8 }}>
+                <div style={{ color: "#fee2e2", marginBottom: 8, fontSize: '0.8rem' }}>
                     {error}
                 </div>
             )}
 
             {token && (
                 <>
-                    {/* CALLER URL */}
                     <div style={{ fontSize: 12, marginBottom: 4 }}>
-                        Caller URL
+                        Guest Invite URL
                     </div>
                     <input
                         value={callerUrl}
@@ -127,51 +124,39 @@ export default function TokenGeneratorWithDuration({
                             width: "80%",
                             padding: 8,
                             marginBottom: 8,
+                            background: '#333',
+                            color: '#ccc',
+                            border: '1px solid #555'
                         }}
                     />
 
-                    <button
-                        type="button"
-                        onClick={copyUrl}
-                        style={{ marginBottom: 8 }}
-                    >
-                        Copy URL
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={() => {
-                            window.open(callerUrl, "_blank");
-                        }}
-                        style={{ marginBottom: 8 }}
-                    >
-                        Open URL for test
-                    </button>
-
-                    <button className="download-btn" onClick={() => window.open("https://drive.google.com/file/d/1sOYjJeLWChslTD-p1eXXcMA8tVGMJQsD/view?usp=drive_link", "_blank")}>
-                        GET SERVER
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <button type="button" onClick={copyUrl}>Copy URL</button>
+                        <button type="button" onClick={() => window.open(callerUrl, "_blank")}>Test URL</button>
+                    </div>
 
                     {expiresAt && (
-                        <div style={{ fontSize: 12, opacity: 0.7 }}>
-                            Expires at:{" "}
-                            {new Date(expiresAt * 1000).toLocaleString()}
+                        <div style={{ fontSize: 11, marginTop: 10, opacity: 0.8 }}>
+                            Link expires: {new Date(expiresAt * 1000).toLocaleTimeString()}
                         </div>
                     )}
                 </>
             )}
 
             <style jsx>{`
-       button:hover {
-  background-color: #000000 !important;
-  color: #ffffff !important;
-  border-color: #000000 !important;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-      `}</style>
+                button {
+                    padding: 8px 12px;
+                    border-radius: 4px;
+                    border: 1px solid #ccc;
+                    background: white;
+                    cursor: pointer;
+                }
+                button:hover {
+                    background-color: #000000 !important;
+                    color: #ffffff !important;
+                    transition: all 0.2s ease;
+                }
+            `}</style>
         </div>
     );
 }
-
-

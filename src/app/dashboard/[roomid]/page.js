@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import {
   StreamVideo,
   StreamCall,
@@ -10,7 +10,7 @@ import {
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/hoststream";
 
-import TokenGenerator from '../components/TokenGenerator';
+import TokenGeneratorWithDuration from '../../components/TokenGenerator';
 
 /**
  * API utility to trigger CasparCG actions
@@ -58,9 +58,11 @@ function ProgramPreviewGrid() {
                     <ParticipantView participant={participant} muted drawParticipantInfo={false} style={{ width: "100%", height: "100%" }} />
                     <button style={{ color: 'black' }}
 
+                      // Inside your ProgramPreviewGrid map
                       onClick={() => endpoint({
                         action: "endpoint",
-                        command: `play ${i + 1}-1 [html] ${window.location.origin}/program?out=${i + 1}`,
+                        // 👈 Added &room=${roomid}
+                        command: `play ${i + 1}-1 [html] ${window.location.origin}/program?out=${i + 1}&room=${roomid}`,
                       })}
                     >
                       Initialise CH {i + 1}
@@ -80,8 +82,10 @@ function ProgramPreviewGrid() {
   );
 }
 
-export default function HostPage() {
-  const userId = "host";
+export default function HostPage({ params }) {
+  const resolvedParams = use(params);
+  const roomid = resolvedParams.roomid;
+  const userId = roomid + "_host_" + Math.random().toString(36).slice(2, 8);;
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
 
@@ -89,8 +93,8 @@ export default function HostPage() {
     (async () => {
       const c = await createStreamClient(userId);
 
-      const call = c.call("default", "room-1");
-      await call.join({ video: false, audio: false });
+      const call = c.call("default", roomid);
+      await call.join({ create: true, video: false, audio: false });
       setClient(c);
       setCall(call);
     })();
@@ -101,13 +105,13 @@ export default function HostPage() {
   return (
     <StreamVideo client={client}>
       <StreamCall call={call}>
-        <HostInner />
+        <HostInner roomid={roomid} />
       </StreamCall>
     </StreamVideo>
   );
 }
 
-function HostInner() {
+function HostInner({ roomid }) {
   const call = useCall();
   const { useParticipants, useCallCustomData } = useCallStateHooks();
   const participants = useParticipants();
@@ -142,11 +146,13 @@ function HostInner() {
   };
 
 
+  // Inside HostInner in your dashboard page
   async function setLive(programKey, userId) {
     await fetch("/api/set-live-user", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ programKey, liveUserId: userId }),
+      // 👈 Added roomid here
+      body: JSON.stringify({ programKey, liveUserId: userId, roomid }),
     });
   }
 
@@ -183,6 +189,9 @@ function HostInner() {
 
   return (
     <div className="dashboard-container">
+      <div style={{ marginBottom: 20, borderBottom: '1px solid #ddd', pb: 10 }}>
+        <h2 style={{ margin: 0 }}>📍 STUDIO: {roomid?.replace(/_/g, " ")}</h2>
+      </div>
       <span style={{ color: '#64748b' }}>DD Caller</span>  CONNECTED SOURCES: {visibleCallers.length}
       <button onClick={async () => {
         await fetch("/api/logout", { method: "POST" });
@@ -271,12 +280,9 @@ function HostInner() {
           </div>
           {showTokenGenerator &&
             <div>
-              <TokenGenerator
-                defaultUserId={`caller-${Date.now()}`}
-                callerPath="/caller"
-                onTokenGenerated={(userId) => {
-                  console.log("Token generated:", userId);
-                }}
+              <TokenGeneratorWithDuration
+                roomid={roomid}
+                defaultUserId={`${roomid}-${Date.now()}`}
               />
             </div>}
         </div>

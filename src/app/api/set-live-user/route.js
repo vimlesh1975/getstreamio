@@ -2,7 +2,10 @@ import jwt from "jsonwebtoken";
 
 export async function POST(req) {
     try {
-        const { programKey, liveUserId } = await req.json();
+        // 👈 Extract roomid from request
+        const { programKey, liveUserId, roomid } = await req.json();
+
+        if (!roomid) throw new Error("Missing roomid");
 
         const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY;
         const apiSecret = process.env.STREAM_API_SECRET;
@@ -12,9 +15,9 @@ export async function POST(req) {
             apiSecret
         );
 
-        // 1️⃣ READ existing call data
+        // 1️⃣ READ existing call data using the dynamic roomid
         const getRes = await fetch(
-            `https://video.stream-io-api.com/video/call/default/room-1?api_key=${apiKey}`,
+            `https://video.stream-io-api.com/video/call/default/${roomid}?api_key=${apiKey}`,
             {
                 headers: {
                     Authorization: token,
@@ -23,11 +26,10 @@ export async function POST(req) {
             }
         );
 
-        if (!getRes.ok) throw new Error("Failed to fetch call");
+        if (!getRes.ok) throw new Error(`Failed to fetch call: ${roomid}`);
 
         const callData = await getRes.json();
-        const existingPrograms =
-            callData.call?.custom?.programs || {};
+        const existingPrograms = callData.call?.custom?.programs || {};
 
         // 2️⃣ MERGE programs
         const updatedPrograms = {
@@ -35,9 +37,9 @@ export async function POST(req) {
             [programKey]: liveUserId,
         };
 
-        // 3️⃣ UPDATE call (FULL OBJECT)
+        // 3️⃣ UPDATE call (Using the dynamic roomid)
         const patchRes = await fetch(
-            `https://video.stream-io-api.com/video/call/default/room-1?api_key=${apiKey}`,
+            `https://video.stream-io-api.com/video/call/default/${roomid}?api_key=${apiKey}`,
             {
                 method: "PATCH",
                 headers: {

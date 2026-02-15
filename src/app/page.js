@@ -5,12 +5,21 @@ import { useState } from "react";
 
 export default function Login() {
   const router = useRouter();
-  const [username, setUsername] = useState("");
+
+  // --- Room Logic ---
+  // We use the Public environment variable to populate the dropdown.
+  // The password remains a secret on the server side.
+  const roomsString = process.env.NEXT_PUBLIC_STREAM_ROOMS || "Default_Room";
+  const rooms = roomsString.split(",");
+
+  // Initialize with the first room in your list
+  const [username, setUsername] = useState(rooms[0] || "");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const login = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault(); // Prevent page refresh
     setLoading(true);
     setError("");
 
@@ -22,12 +31,14 @@ export default function Login() {
       });
 
       if (res.ok) {
-        router.push("/dashboard");
+        // ✅ Success: Redirect to the specific dashboard for that room
+        router.push(`/dashboard/${username}`);
       } else {
-        setError("Invalid username or password");
+        // ❌ Fail: API returned 401 Unauthorized
+        setError("Invalid password for the selected room.");
       }
     } catch (e) {
-      setError("Login failed. Try again.");
+      setError("Connection failed. Please check your network.");
     } finally {
       setLoading(false);
     }
@@ -37,133 +48,128 @@ export default function Login() {
     <div className="login-page">
       <div className="login-card">
         <h1 className="title">🎙️ Studio Login</h1>
-        <p className="subtitle">
-          Sign in to access the control room
-        </p>
+        <p className="subtitle">Select a studio and enter the master password</p>
 
-        <div className="field">
-          <label>Username</label>
-          <input
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Enter username"
-          />
-        </div>
+        <form onSubmit={handleLogin}>
+          {/* ---------- ROOM SELECTION ---------- */}
+          <div className="field">
+            <label>Control Room</label>
+            <select
+              className="room-select"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={loading}
+            >
+              {rooms.map((room) => (
+                <option key={room} value={room}>
+                  {room.replace(/_/g, " ")}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div className="field">
-          <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter password"
-          />
-        </div>
+          {/* ---------- PASSWORD INPUT ---------- */}
+          <div className="field">
+            <label>Master Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              disabled={loading}
+              required
+            />
+          </div>
 
-        {error && <div className="error">{error}</div>}
+          {error && <div className="error">{error}</div>}
 
-        <button
-          className="login-btn"
-          onClick={login}
-          disabled={loading || !username || !password}
-        >
-          {loading ? "Signing in…" : "Login"}
-        </button>
+          <button
+            type="submit"
+            className="login-btn"
+            disabled={loading || !username || !password}
+          >
+            {loading ? "Authenticating..." : `Enter ${username.replace(/_/g, " ")}`}
+          </button>
+        </form>
       </div>
 
-      {/* ---------- STYLES ---------- */}
       <style jsx>{`
         .login-page {
           height: 100vh;
           display: grid;
           place-items: center;
-          background: linear-gradient(
-            135deg,
-            #f8fafc 0%,
-            #e2e8f0 100%
-          );
-          font-family: Inter, system-ui, sans-serif;
+          background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+          font-family: 'Inter', sans-serif;
         }
-
         .login-card {
-          width: 360px;
-          background: white;
-          padding: 32px;
-          border-radius: 16px;
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-          border: 1px solid #e5e7eb;
+          width: 380px;
+          background: #ffffff;
+          padding: 40px;
+          border-radius: 20px;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
-
-        .title {
-          margin: 0 0 8px;
-          text-align: center;
-          font-size: 1.5rem;
-          color: #0f172a;
-        }
-
-        .subtitle {
-          margin: 0 0 24px;
-          text-align: center;
-          font-size: 0.9rem;
-          color: #64748b;
-        }
-
-        .field {
-          margin-bottom: 16px;
-        }
-
-        .field label {
-          display: block;
-          font-size: 0.8rem;
-          margin-bottom: 6px;
-          color: #475569;
-        }
-
-        .field input {
+        .title { margin: 0 0 10px; text-align: center; font-size: 1.75rem; color: #1e293b; font-weight: 800; }
+        .subtitle { margin: 0 0 30px; text-align: center; font-size: 0.95rem; color: #64748b; }
+        .field { margin-bottom: 20px; }
+        .field label { display: block; font-size: 0.85rem; margin-bottom: 8px; color: #475569; font-weight: 600; }
+        
+        .room-select, .field input {
           width: 100%;
-          padding: 12px;
-          border-radius: 8px;
-          border: 1px solid #cbd5f5;
-          font-size: 0.95rem;
+          padding: 14px;
+          border-radius: 12px;
+          border: 2px solid #e2e8f0;
+          font-size: 1rem;
           outline: none;
-          transition: border 0.2s, box-shadow 0.2s;
+          background: #f8fafc;
+          transition: all 0.2s;
         }
 
-        .field input:focus {
-          border-color: #2563eb;
-          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        .room-select:focus, .field input:focus {
+          border-color: #3b82f6;
+          background: #ffffff;
+          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .room-select {
+          appearance: none;
+          background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+          background-repeat: no-repeat;
+          background-position: right 15px center;
+          background-size: 18px;
         }
 
         .error {
-          background: #fee2e2;
-          color: #991b1b;
-          padding: 10px;
-          border-radius: 8px;
-          font-size: 0.8rem;
-          margin-bottom: 14px;
+          background: #fef2f2;
+          color: #dc2626;
+          padding: 12px;
+          border-radius: 10px;
+          font-size: 0.85rem;
+          margin-bottom: 20px;
           text-align: center;
+          border: 1px solid #fee2e2;
         }
 
         .login-btn {
           width: 100%;
-          padding: 14px;
-          border-radius: 10px;
+          padding: 16px;
+          border-radius: 12px;
           border: none;
           background: #2563eb;
           color: white;
           font-size: 1rem;
-          font-weight: bold;
+          font-weight: 700;
           cursor: pointer;
-          transition: transform 0.15s, background 0.15s;
+          transition: all 0.2s;
         }
 
         .login-btn:hover:not(:disabled) {
           background: #1d4ed8;
-          transform: translateY(-1px);
+          transform: translateY(-2px);
+          box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);
         }
 
         .login-btn:disabled {
-          opacity: 0.6;
+          background: #94a3b8;
           cursor: not-allowed;
         }
       `}</style>

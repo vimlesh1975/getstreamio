@@ -24,8 +24,10 @@ export default function ProgramPage() {
 function ProgramLoader() {
   const params = useSearchParams();
   const out = params.get("out") || "1";
+  // 👈 1. Get the room ID from the URL (e.g., ?room=Studio_Alpha)
+  const roomid = params.get("room");
 
-  const userId = `program-${out}`;
+  const userId = `program-${out}-${roomid}`; // Unique ID per room/output
   const programKey = `program${out}`;
 
   const [client, setClient] = useState(null);
@@ -34,10 +36,10 @@ function ProgramLoader() {
   useEffect(() => {
     (async () => {
       const c = await createStreamClient(userId);
-      const call = c.call("default", "room-1");
+      const call = c.call("default", roomid);
 
       // 🔑 REQUIRED CHANGE: Explicitly join without requesting hardware to fix Caspar error
-      await call.join({ video: false, audio: false });
+      await call.join({ create: true, video: false, audio: false });
 
       setClient(c);
       setCall(call);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import {
   StreamVideo,
   StreamCall,
@@ -12,15 +12,21 @@ import {
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 import { createStreamClient } from "@/lib/stream";
 
-export default function MeetingPage() {
+export default function MeetingPage({ params }) {
+  // 1. Extract roomid from dynamic route /caller/[roomid]
+  const resolvedParams = use(params);
+  const roomid = resolvedParams.roomid;
+
+  const [userId] = useState(() => roomid + "_" + Math.random().toString(36).slice(2, 8));
+
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
-  const [userId] = useState(() => "caller-" + Math.random().toString(36).slice(2, 8));
+
 
   useEffect(() => {
     async function init() {
       const c = await createStreamClient(userId);
-      const newCall = c.call("default", "room-1");
+      const newCall = c.call("default", roomid);
 
       await newCall.join({ create: true, video: true, audio: true });
 
@@ -38,19 +44,19 @@ export default function MeetingPage() {
     <StreamVideo client={client}>
       <StreamCall call={call}>
         <StreamTheme>
-          <MeetingUI />
+          <MeetingUI roomid={roomid} />
         </StreamTheme>
       </StreamCall>
     </StreamVideo>
   );
 }
 
-function MeetingUI() {
+function MeetingUI({ roomid }) {
   const { useParticipants, useLocalParticipant } = useCallStateHooks();
   const participants = useParticipants();
   const localParticipant = useLocalParticipant();
 
-  const host = participants.find((p) => p.userId === "host") || participants.find((p) => p.userId !== localParticipant?.userId);
+  const host = participants.find((p) => p.userId.includes(roomid + "_host"));
 
   return (
     <div className="main-container">
