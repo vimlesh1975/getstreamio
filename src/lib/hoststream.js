@@ -1,7 +1,7 @@
 import { StreamVideoClient } from "@stream-io/video-react-sdk";
 
 export async function createStreamClient(userId) {
-  const res = await fetch("/api/token", {
+  const res = await fetch("/api/hosttoken", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     cache: "no-store",

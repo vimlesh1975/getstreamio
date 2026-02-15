@@ -19,7 +19,6 @@ export async function POST(req) {
     {
       id: userId,
       role: 'admin', // Sets the global role to admin
-      name: 'host',
     },
   ]);
 

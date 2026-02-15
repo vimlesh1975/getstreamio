@@ -218,7 +218,7 @@ function HostInner() {
               <div className="card-header">
                 <span className="user-id-label">{caller.userId}</span><button onClick={() => {
                   removeUser(caller.userId);
-                }}>Remove</button>
+                }}>Remove</button>{caller.roles}
                 {isLive && <span className="live-pill">LIVE</span>}
                 <div className={`audio-active-dot ${caller.isSpeaking ? "on" : ""}`} />
               </div>
