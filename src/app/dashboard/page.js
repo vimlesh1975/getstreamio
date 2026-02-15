@@ -8,7 +8,7 @@ import {
   useCall,
   useCallStateHooks,
 } from "@stream-io/video-react-sdk";
-import { createStreamClient } from "@/lib/stream";
+import { createStreamClient } from "@/lib/hoststream";
 
 import TokenGenerator from '../components/TokenGenerator';
 
@@ -27,6 +27,7 @@ const endpoint = async (str) => {
     console.error("CasparCG Error:", e);
   }
 };
+
 
 /**
  * Previews for the 4 Program Channels
@@ -87,6 +88,7 @@ export default function HostPage() {
   useEffect(() => {
     (async () => {
       const c = await createStreamClient(userId);
+
       const call = c.call("default", "room-1");
       await call.join({ video: false, audio: false });
       setClient(c);
@@ -123,6 +125,21 @@ function HostInner() {
     }
   }
 
+  // 3. The Kick Function
+  const removeUser = async (userId) => {
+    if (!userId) return;
+    try {
+      // blocks user = kicks them out
+      // await call.blockUser(userId);
+      await call.kickUser({
+        user_id: userId,
+      });
+
+    } catch (err) {
+      console.error("Failed to remove user:", err);
+      alert("Error: You might not have permission to kick users.");
+    }
+  };
 
 
   async function setLive(programKey, userId) {
@@ -199,7 +216,9 @@ function HostInner() {
           return (
             <div key={caller.sessionId} className={`caller-card ${isLive ? 'is-live' : ''}`}>
               <div className="card-header">
-                <span className="user-id-label">{caller.userId}</span>
+                <span className="user-id-label">{caller.userId}</span><button onClick={() => {
+                  removeUser(caller.userId);
+                }}>Remove</button>
                 {isLive && <span className="live-pill">LIVE</span>}
                 <div className={`audio-active-dot ${caller.isSpeaking ? "on" : ""}`} />
               </div>
