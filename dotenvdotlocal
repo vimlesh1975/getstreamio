@@ -1,2 +1,12 @@
 NEXT_PUBLIC_STREAM_API_KEY=
 STREAM_API_SECRET=
+
+
+# KEEP the username public (so the dropdown works)
+NEXT_PUBLIC_ADMIN_USERNAME=admin
+NEXT_PUBLIC_STREAM_ROOMS="ddsahyadri,Studio_Bravo,Main_Gallery,Emergency_Broadcast"
+
+# CHANGE THIS: Remove NEXT_PUBLIC_ so it's a server secret
+ADMIN_PASSWORD=
+
+
