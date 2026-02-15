@@ -6,9 +6,12 @@ import {
     StreamCall,
     ParticipantView,
     useCallStateHooks,
+    StreamTheme,
+    CallControls,
 } from "@stream-io/video-react-sdk";
 import { StreamVideoClient } from "@stream-io/video-client";
 import { useSearchParams } from "next/navigation";
+import "@stream-io/video-react-sdk/dist/css/styles.css";
 
 export default function CallerWithToken() {
     const params = useSearchParams();
@@ -16,7 +19,6 @@ export default function CallerWithToken() {
 
     const [client, setClient] = useState(null);
     const [call, setCall] = useState(null);
-    const [joined, setJoined] = useState(false);
     const [error, setError] = useState("");
 
     // 🔐 Validate token & setup Stream client
@@ -26,86 +28,111 @@ export default function CallerWithToken() {
             return;
         }
 
-        try {
-            // Decode JWT payload (NOT validation – Stream validates later)
-            const payload = JSON.parse(atob(token.split(".")[1]));
-            const now = Math.floor(Date.now() / 1000);
+        // Initialize the client inside an async function or useEffect block
+        const initClient = async () => {
+            try {
+                // Decode JWT payload (Basic expiry check)
+                // atob decodes the base64 token string
+                const payload = JSON.parse(atob(token.split(".")[1]));
+                const now = Math.floor(Date.now() / 1000);
 
-            // ⏰ Expiry check BEFORE connecting
-            if (payload.exp < now) {
-                setError("⏰ This invite link has expired.");
-                return;
+                if (payload.exp < now) {
+                    setError("⏰ This invite link has expired.");
+                    return;
+                }
+
+                const userId = payload.user_id;
+                const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY;
+
+                if (!apiKey) {
+                    setError("❌ Configuration error: Missing API Key");
+                    return;
+                }
+
+                const newClient = new StreamVideoClient({
+                    apiKey,
+                    user: { id: userId },
+                    token,
+                });
+
+                const newCall = newClient.call("default", "room-1");
+
+                // Join immediately
+                await newCall.join({ create: true, video: true, audio: true });
+
+                setClient(newClient);
+                setCall(newCall);
+            } catch (err) {
+                console.error("Join failed", err);
+                setError("❌ Invalid invite link or connection failed.");
             }
+        };
 
-            const userId = payload.user_id;
+        initClient();
 
-            const client = new StreamVideoClient({
-                apiKey: process.env.NEXT_PUBLIC_STREAM_API_KEY,
-                user: { id: userId },
-                token,
-            });
-
-            const call = client.call("default", "room-1");
-
-            setClient(client);
-            setCall(call);
-        } catch (e) {
-            console.error(e);
-            setError("❌ Invalid invite link.");
-        }
+        // Cleanup function
+        return () => {
+            if (client) {
+                client.disconnectUser();
+            }
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 
     // 🚫 FULL-SCREEN ERROR UI
     if (error) {
         return (
-            <div
-                style={{
-                    background: "#0f0f0f",
-                    color: "white",
-                    height: "100vh",
-                    display: "grid",
-                    placeItems: "center",
-                    textAlign: "center",
-                    padding: 30,
-                    fontFamily: "sans-serif",
-                }}
-            >
-                <div>
+            <div className="error-screen">
+                <div className="error-content">
                     <div style={{ fontSize: 60 }}>🚫</div>
                     <h2>{error}</h2>
-                    <p style={{ color: "#888", marginTop: 10 }}>
-                        Please contact the host for a new link.
-                    </p>
+                    <p>Please contact the host for a new link.</p>
                 </div>
+                <style jsx>{`
+          .error-screen {
+            background: #0f0f0f;
+            color: white;
+            height: 100vh;
+            display: grid;
+            place-items: center;
+            text-align: center;
+            font-family: sans-serif;
+          }
+          .error-content p {
+            color: #888;
+            margin-top: 10px;
+          }
+        `}</style>
             </div>
         );
     }
 
+    // ⏳ LOADING UI
     if (!client || !call) {
         return (
-            <div
-                style={{
-                    background: "#111",
-                    height: "100vh",
-                    color: "white",
-                    display: "grid",
-                    placeItems: "center",
-                }}
-            >
-                Validating invite…
+            <div className="loading-screen">
+                <p>Validating invite...</p>
+                <style jsx>{`
+          .loading-screen {
+            background: #111;
+            height: 100vh;
+            color: white;
+            display: grid;
+            place-items: center;
+            font-family: sans-serif;
+          }
+        `}</style>
             </div>
         );
     }
 
+    // ✅ ACTIVE CALL UI
     return (
         <StreamVideo client={client}>
             <StreamCall call={call}>
-                <CallerInner
-                    call={call}
-                    joined={joined}
-                    setJoined={setJoined}
-                    setError={setError}
-                />
+                <StreamTheme>
+                    <CallerUI />
+                </StreamTheme>
             </StreamCall>
         </StreamVideo>
     );
@@ -115,173 +142,122 @@ export default function CallerWithToken() {
 /* ---------------- CALLER UI --------------------- */
 /* ------------------------------------------------ */
 
-function CallerInner({ call, joined, setJoined, setError }) {
-    const {
-        useParticipants,
-        useLocalParticipant,
-        useMicrophoneState,
-        useCameraState,
-    } = useCallStateHooks();
-
+function CallerUI() {
+    const { useParticipants, useLocalParticipant } = useCallStateHooks();
     const participants = useParticipants();
-    const self = useLocalParticipant();
-    const host = participants.find((p) => p.userId === "host");
+    const localParticipant = useLocalParticipant();
 
-    // Get Mute States
-    const { microphone, isMute } = useMicrophoneState();
-    const CameraState = useCameraState();
-    const localAudioLevel = self?.audioLevel || 0;
+    // Logic: Find the Host, or just the "other" person if I am not the host
+    const host =
+        participants.find((p) => p.userId === "host") ||
+        participants.find((p) => p.userId !== localParticipant?.userId);
 
-    // 🎯 JOIN CALL WITH ERROR HANDLING
-    async function startCall() {
-        try {
-            await call.join({
-                create: true,
-                video: true,
-                audio: true,
-            });
-
-            setJoined(true);
-        } catch (err) {
-            console.error("Join failed:", err);
-
-            if (
-                err?.message?.includes("token is expired") ||
-                err?.code === 40
-            ) {
-                setError("⏰ This invite link has expired.");
-            } else {
-                setError("❌ Invalid or unauthorized invite link.");
-            }
-        }
-    }
-
-    // -------- SETUP SCREEN --------
-    if (!joined) {
-        return (
-            <div
-                style={{
-                    background: "#1a1a1a",
-                    minHeight: "100vh",
-                    color: "white",
-                    display: "grid",
-                    placeItems: "center",
-                    fontFamily: "sans-serif",
-                }}
-            >
-                <div style={{ textAlign: "center" }}>
-                    <h2>📷 Media Setup</h2>
-                    <p style={{ color: "#aaa" }}>
-                        Allow camera & microphone to continue
-                    </p>
-
-                    <button
-                        onClick={startCall}
-                        style={{
-                            marginTop: 30,
-                            padding: "14px 40px",
-                            fontSize: 18,
-                            borderRadius: 30,
-                            border: "none",
-                            background: "#0070f3",
-                            color: "white",
-                            cursor: "pointer",
-                            fontWeight: "bold",
-                        }}
-                    >
-                        📲 Enter Call
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
-    // -------- IN-CALL UI --------
     return (
-        <div
-            style={{
-                background: "black",
-                minHeight: "100vh",
-                color: "white",
-                padding: 10,
-            }}
-        >
-            <div style={{ display: "flex", gap: 10, height: "85vh" }}>
-                <div style={{ flex: 1 }}>
-                    <p style={{ color: "#888" }}>Host</p>
+        <div className="main-container">
+            <div className="video-grid">
+                {/* HOST / OTHER PARTICIPANT */}
+                <div className="video-tile">
                     {host ? (
-                        <ParticipantView participant={host} />
+                        <ParticipantView participant={host} key={host.sessionId} />
                     ) : (
-                        <div style={{ color: "#444" }}>Waiting for host…</div>
+                        <div className="status">Waiting for host...</div>
                     )}
+                    <div className="name-badge">Host</div>
                 </div>
 
-                <div style={{ flex: 1, position: "relative" }}>
-                    <p style={{ color: "#888" }}>You</p>
-                    {self && <ParticipantView participant={self} muted />}
-
-                    {/* 🎤 AUDIO LEVEL BAR */}
-                    <div
-                        style={{
-                            position: "absolute",
-                            left: 10,
-                            bottom: 10,
-                            width: 6,
-                            height: 120,
-                            background: "#222",
-                            borderRadius: 4,
-                        }}
-                    >
-                        <div
-                            style={{
-                                position: "absolute",
-                                bottom: 0,
-                                width: "100%",
-                                height: `${Math.min(
-                                    Math.pow(localAudioLevel, 0.4) * 100,
-                                    100
-                                )}%`,
-                                background: isMute ? "red" : "#4caf50",
-                            }}
+                {/* YOUR TILE (LOCAL) */}
+                <div className="video-tile">
+                    {localParticipant ? (
+                        <ParticipantView
+                            participant={localParticipant}
+                            mirror={true}
+                            key={localParticipant.sessionId}
                         />
-                    </div>
-
-                    {CameraState.camMute && (
-                        <div
-                            style={{
-                                position: "absolute",
-                                inset: 0,
-                                background: "#111",
-                                display: "grid",
-                                placeItems: "center",
-                                color: "#555",
-                            }}
-                        >
-                            Camera Off
-                        </div>
+                    ) : (
+                        <div className="status">Starting Camera...</div>
                     )}
+                    <div className="name-badge">You</div>
                 </div>
             </div>
 
-            {/* CONTROLS */}
-            <div
-                style={{
-                    display: "flex",
-                    gap: 15,
-                    justifyContent: "center",
-                    marginTop: 10,
-                }}
-            >
-                <button onClick={() => call.microphone.toggle()}>
-                    {isMute ? "🎤 Unmute" : "🎤 Mute"}
-                </button>
-                <button onClick={() => call.camera.toggle()}>
-                    {CameraState.isMute ? "📷 Turn On" : "📷 Stop"}
-                </button>
-                <button onClick={() => window.location.reload()}>
-                    🚪 Leave
-                </button>
+            {/* FIXED CONTROLS OVERLAY (Floating at bottom) */}
+            <div className="floating-controls">
+                <CallControls onLeave={() => (window.location.href = "/")} />
             </div>
+
+            <style jsx>{`
+        .main-container {
+          /* Dynamic viewport height for Mobile Address Bar fix */
+          height: 100dvh;
+          width: 100vw;
+          background: #000;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .video-grid {
+          height: 100%;
+          width: 100%;
+          display: grid;
+          /* LANDSCAPE: Side-by-Side */
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+          padding: 8px;
+          padding-bottom: 80px; /* Space for controls */
+        }
+
+        .video-tile {
+          position: relative;
+          background: #1a1a1a;
+          border-radius: 12px;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .name-badge {
+          position: absolute;
+          bottom: 10px;
+          left: 10px;
+          background: rgba(0, 0, 0, 0.6);
+          color: white;
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-size: 12px;
+          z-index: 5;
+        }
+
+        .status {
+          color: #555;
+          font-family: sans-serif;
+        }
+
+        /* --- FIXED CONTROLS CSS --- */
+        .floating-controls {
+          position: absolute;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 100;
+          width: auto;
+          display: flex;
+          justify-content: center;
+          background: rgba(0, 0, 0, 0.6);
+          padding: 10px;
+          border-radius: 30px;
+          backdrop-filter: blur(4px);
+        }
+
+        /* MOBILE PORTRAIT: Stack vertically */
+        @media (max-width: 768px) and (orientation: portrait) {
+          .video-grid {
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr 1fr;
+            padding-bottom: 100px;
+          }
+        }
+      `}</style>
         </div>
     );
 }
