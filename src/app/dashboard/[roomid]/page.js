@@ -56,7 +56,7 @@ function ProgramPreviewGrid({ roomid }) {
                 <div style={{ color: "#94a3b8", fontSize: 10, textAlign: "center", marginBottom: 4, fontWeight: 'bold' }}>{key.toUpperCase()}</div>
                 <div style={{ height: 100, background: "#050505", borderRadius: 4, overflow: "hidden1" }}>
                   {participant && (<>
-                    <ParticipantView participant={participant} muted drawParticipantInfo={false} style={{ width: "100%", height: "100%" }} />
+                    <ParticipantView mirror={false} participant={participant} muted drawParticipantInfo={false} style={{ width: "100%", height: "100%" }} />
                     <button style={{ color: 'black' }}
 
                       // Inside your ProgramPreviewGrid map
