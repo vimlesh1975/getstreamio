@@ -32,7 +32,7 @@ const endpoint = async (str) => {
 /**
  * Previews for the 4 Program Channels
  */
-function ProgramPreviewGrid() {
+function ProgramPreviewGrid({ roomid }) {
   const { useParticipants, useCallCustomData } = useCallStateHooks();
   const participants = useParticipants();
   const custom = useCallCustomData();
@@ -270,7 +270,7 @@ function HostInner({ roomid }) {
       </div>
       <div style={{ display: 'flex' }}>
         <div>
-          <ProgramPreviewGrid />
+          <ProgramPreviewGrid roomid={roomid} />
         </div>
         <div>
           <div>
