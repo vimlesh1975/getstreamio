@@ -68,6 +68,9 @@ function ProgramPreviewGrid({ roomid }) {
                     >
                       Initialise CH {i + 1}
                     </button>
+                    <button onClick={() => {
+                      window.open(`${window.location.origin}/program?out=${i + 1}&room=${roomid}`, "_blank")
+                    }}>for HDMI</button>
                   </>)
                   }
                 </div>
