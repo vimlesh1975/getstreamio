@@ -51,7 +51,7 @@ export default function TokenGeneratorWithDuration({
     const callerUrl = useMemo(() => {
         if (!token || !baseUrl) return "";
         // Sends them to /caller/[roomid] with the token as a query param
-        return `${baseUrl}/caller/${roomid}?token=${encodeURIComponent(token)}`;
+        return `${baseUrl}/caller-with-token/${roomid}?token=${encodeURIComponent(token)}`;
     }, [token, baseUrl, roomid]);
 
     function copyUrl() {
