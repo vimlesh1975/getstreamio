@@ -108,7 +108,7 @@ function ProgramInner({ programKey }) {
           width: 100vw !important;
           height: 100vh !important;
           object-fit: fill !important;
-          transform: scaleX(-1) !important;
+          transform: scaleX(1) !important;
           display: block !important;
         }
 
