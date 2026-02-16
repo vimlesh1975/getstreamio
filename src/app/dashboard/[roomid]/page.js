@@ -124,6 +124,9 @@ function HostInner({ roomid }) {
   const [accepted, setAccepted] = useState(false);
 
   const [showTokenGenerator, setShowTokenGenerator] = useState(false);
+  const [muteAudio, setMuteAudio] = useState(true);
+
+
 
   async function endCallForAll() {
     try {
@@ -133,16 +136,16 @@ function HostInner({ roomid }) {
     }
   }
   // Inside your HostInner component
-  async function muteAllCallers() {
-    try {
-      // This triggers a request to the server to mute everyone except the person calling it
-      await call.muteAllUsers('audio');
-      console.log("Sent mute request to all participants");
-    } catch (err) {
-      console.error("Failed to mute all:", err);
-      // alert("Permission denied: Only a host can mute all participants.");
-    }
-  }
+  // async function muteAllCallers() {
+  //   try {
+  //     // This triggers a request to the server to mute everyone except the person calling it
+  //     await call.muteAllUsers('audio');
+  //     console.log("Sent mute request to all participants");
+  //   } catch (err) {
+  //     console.error("Failed to mute all:", err);
+  //     // alert("Permission denied: Only a host can mute all participants.");
+  //   }
+  // }
   // 3. The Kick Function
   const removeUser = async (userId) => {
     if (!userId) return;
@@ -229,7 +232,9 @@ function HostInner({ roomid }) {
         🔴 END CALL (ALL)
       </button>
       <button
-        onClick={muteAllCallers}
+        onClick={() => {
+          setMuteAudio(val => !val);
+        }}
         style={{
           background: "#f59e0b", // Amber/Orange color
           color: "white",
@@ -241,7 +246,7 @@ function HostInner({ roomid }) {
           marginLeft: "10px"
         }}
       >
-        🔇 MUTE ALL GUESTS
+        {muteAudio ? "UnMute" : "Mute"}
       </button>
 
       <div className="gallery-grid">
@@ -263,7 +268,7 @@ function HostInner({ roomid }) {
               <div className="video-viewport">
                 <ParticipantView
                   participant={caller}
-                  muted
+                  muteAudio={muteAudio}
                   drawParticipantInfo={false}
                   style={{ width: "100%", height: "100%" }}
                 />
