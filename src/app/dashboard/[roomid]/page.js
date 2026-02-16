@@ -268,6 +268,7 @@ function HostInner({ roomid }) {
               <div className="video-viewport">
                 <ParticipantView
                   participant={caller}
+                  mirror={false}
                   muteAudio={muteAudio}
                   drawParticipantInfo={false}
                   style={{ width: "100%", height: "100%" }}
