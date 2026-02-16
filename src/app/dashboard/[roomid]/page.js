@@ -18,6 +18,7 @@ import TokenGeneratorWithDuration from '../../components/TokenGenerator';
 const endpoint = async (str) => {
   const requestOptions = {
     method: "POST",
+    mode: 'cors', // Explicitly ask for CORS
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(str),
   };
