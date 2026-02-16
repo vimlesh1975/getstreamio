@@ -16,7 +16,6 @@ export default function MeetingPage({ params }) {
   // 1. Extract roomid from dynamic route /caller/[roomid]
   const resolvedParams = use(params);
   const roomid = resolvedParams.roomid;
-
   const [userId] = useState(() => roomid + "_" + Math.random().toString(36).slice(2, 8));
 
   const [client, setClient] = useState(null);
