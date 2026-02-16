@@ -132,7 +132,17 @@ function HostInner({ roomid }) {
       console.error("Failed to end call", err);
     }
   }
-
+  // Inside your HostInner component
+  async function muteAllCallers() {
+    try {
+      // This triggers a request to the server to mute everyone except the person calling it
+      await call.muteAllUsers('audio');
+      console.log("Sent mute request to all participants");
+    } catch (err) {
+      console.error("Failed to mute all:", err);
+      // alert("Permission denied: Only a host can mute all participants.");
+    }
+  }
   // 3. The Kick Function
   const removeUser = async (userId) => {
     if (!userId) return;
@@ -218,7 +228,21 @@ function HostInner({ roomid }) {
       >
         🔴 END CALL (ALL)
       </button>
-
+      <button
+        onClick={muteAllCallers}
+        style={{
+          background: "#f59e0b", // Amber/Orange color
+          color: "white",
+          padding: "12px 20px",
+          borderRadius: 8,
+          border: "none",
+          fontWeight: "bold",
+          cursor: "pointer",
+          marginLeft: "10px"
+        }}
+      >
+        🔇 MUTE ALL GUESTS
+      </button>
 
       <div className="gallery-grid">
         {visibleCallers.map((caller) => {
