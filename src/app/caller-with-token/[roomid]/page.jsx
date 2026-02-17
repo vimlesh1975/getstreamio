@@ -96,8 +96,7 @@ function MeetingUI({ roomid }) {
     const localParticipant = useLocalParticipant();
 
     // Find the host (user starting with 'host-')
-    const host = participants.find((p) => p.userId.startsWith("host-")) ||
-        participants.find((p) => p.userId !== localParticipant?.userId);
+    const host = participants.find((p) => p.userId.includes(roomid + "_host"));
 
     return (
         <div className="main-container">

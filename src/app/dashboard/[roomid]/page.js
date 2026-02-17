@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState, use, useMemo } from "react";
 import {
   StreamVideo,
   StreamCall,
@@ -89,21 +89,43 @@ function ProgramPreviewGrid({ roomid }) {
 export default function HostPage({ params }) {
   const resolvedParams = use(params);
   const roomid = resolvedParams.roomid;
-  const userId = roomid + "_host_" + Math.random().toString(36).slice(2, 8);;
+  // const userId = roomid + "_host_" + Math.random().toString(36).slice(2, 8);
+  // Inside HostPage
+  const userId = useMemo(() => {
+    return `${roomid}_host_${Math.random().toString(36).slice(2, 6)}`;
+  }, [roomid]);
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
 
+
   useEffect(() => {
+    let active = true;
     (async () => {
       const c = await createStreamClient(userId);
+      if (!active) return;
 
       const call = c.call("default", roomid);
+
+      // We set the role to 'admin' to ensure they have permissions 
+      // to kick others or mute all.
+      await call.getOrCreate({
+        data: {
+          members: [{ user_id: userId, role: 'admin' }]
+        }
+      });
+
       await call.join({ create: true, video: false, audio: false });
+
       setClient(c);
       setCall(call);
     })();
-  }, []);
 
+    return () => {
+      active = false;
+      // Cleanup to prevent double-mounting issues
+      client?.disconnectUser();
+    };
+  }, [userId, roomid]);
   if (!client || !call) return <div style={{ background: "#0f172a", height: "100vh", color: "white", padding: 20 }}>Initializing Host...</div>;
 
   return (
@@ -135,30 +157,16 @@ function HostInner({ roomid }) {
       console.error("Failed to end call", err);
     }
   }
-  // Inside your HostInner component
-  // async function muteAllCallers() {
-  //   try {
-  //     // This triggers a request to the server to mute everyone except the person calling it
-  //     await call.muteAllUsers('audio');
-  //     console.log("Sent mute request to all participants");
-  //   } catch (err) {
-  //     console.error("Failed to mute all:", err);
-  //     // alert("Permission denied: Only a host can mute all participants.");
-  //   }
-  // }
-  // 3. The Kick Function
+
   const removeUser = async (userId) => {
     if (!userId) return;
     try {
-      // blocks user = kicks them out
-      // await call.blockUser(userId);
       await call.kickUser({
         user_id: userId,
       });
 
     } catch (err) {
       console.error("Failed to remove user:", err);
-      alert("Error: You might not have permission to kick users.");
     }
   };
 
@@ -182,6 +190,28 @@ function HostInner({ roomid }) {
       call?.microphone.enable();
     }
   }, [call, accepted]);
+
+  useEffect(() => {
+    console.log(call.currentUserId);
+    // 1. Identify "Ghost" admins (other users starting with admin_ that aren't ME)
+    const ghostAdmins = participants.filter(
+      (p) => p.userId.includes(roomid + "_host") && p.userId !== call.currentUserId
+    );
+
+    // 2. If any exist, kick them automatically
+    if (ghostAdmins.length > 0) {
+      console.log(`Cleaning up ${ghostAdmins.length} ghost session(s)...`);
+
+      ghostAdmins.forEach(async (ghost) => {
+        try {
+          await call.kickUser({ user_id: ghost.userId });
+          console.log(`Successfully removed ghost: ${ghost.userId}`);
+        } catch (err) {
+          console.error("Failed to auto-remove ghost admin:", err);
+        }
+      });
+    }
+  }, []);
 
   const visibleCallers = participants.filter((p) => !p.userId.startsWith("program"));
   const hasCaller = visibleCallers.length > 0;
