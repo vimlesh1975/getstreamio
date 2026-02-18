@@ -134,7 +134,9 @@ export default function TokenGeneratorWithDuration({
                         <button type="button" onClick={copyUrl}>Copy URL</button>
                         <button type="button" onClick={() => window.open(callerUrl, "_blank")}>Test URL</button>
                     </div>
-
+                    <button className="download-btn" onClick={() => window.open("https://drive.google.com/file/d/1sOYjJeLWChslTD-p1eXXcMA8tVGMJQsD/view?usp=drive_link", "_blank")}>
+                        download Casparcg Server
+                    </button>
                     {expiresAt && (
                         <div style={{ fontSize: 11, marginTop: 10, opacity: 0.8 }}>
                             Link expires: {new Date(expiresAt * 1000).toLocaleTimeString()}
