@@ -98,6 +98,48 @@ function MeetingUI({ roomid }) {
     // Find the host (user starting with 'host-')
     const host = participants.find((p) => p.userId.includes(roomid + "_host"));
 
+    const [isFinished, setIsFinished] = useState(false);
+
+    if (isFinished) {
+        return (
+            <div className="exit-screen">
+                <div className="exit-card">
+                    <div className="icon">🎬</div>
+                    <h1>Broadcast Finished</h1>
+                    <p>Thank you for participating in the session.</p>
+                    <div className="status-badge">SESSION DISCONNECTED</div>
+                </div>
+                <style jsx>{`
+                .exit-screen {
+                    height: 100vh;
+                    display: grid;
+                    place-items: center;
+                    background: #020617;
+                    font-family: sans-serif;
+                }
+                .exit-card {
+                    text-align: center;
+                    color: white;
+                    padding: 40px;
+                    border: 1px solid #1e293b;
+                    border-radius: 24px;
+                    background: rgba(15, 23, 42, 0.8);
+                }
+                .icon { font-size: 3rem; margin-bottom: 20px; }
+                p { color: #94a3b8; margin-bottom: 30px; }
+                .status-badge {
+                    display: inline-block;
+                    padding: 4px 12px;
+                    background: #334155;
+                    border-radius: 6px;
+                    font-size: 0.7rem;
+                    letter-spacing: 1px;
+                }
+            `}</style>
+            </div>
+        );
+    }
+
     return (
         <div className="main-container">
             <div className="video-grid">
@@ -119,7 +161,11 @@ function MeetingUI({ roomid }) {
             </div>
 
             <div className="floating-controls">
-                <CallControls onLeave={() => window.location.href = "/"} />
+                <CallControls onLeave={async () => {
+                    console.log('dsdsd')
+                    // await call.leave();
+                    setIsFinished(true); // 👈 This triggers the Thank You screen
+                }} />
             </div>
 
             <style jsx>{`

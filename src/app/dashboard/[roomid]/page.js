@@ -299,7 +299,7 @@ function HostInner({ roomid }) {
                 <ParticipantView
                   participant={caller}
                   mirror={false}
-                  muteAudio={muteAudio}
+                  muteAudio={caller.userId.includes('host') ? true : muteAudio}
                   drawParticipantInfo={false}
                   style={{ width: "100%", height: "100%" }}
                 />
