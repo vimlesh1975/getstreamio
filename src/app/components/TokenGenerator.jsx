@@ -141,7 +141,7 @@ export default function TokenGeneratorWithDuration({
 
                         }}>Test URL</button>
                     </div>
-                    <button className="download-btn" onClick={() => window.open("https://drive.google.com/file/d/1sOYjJeLWChslTD-p1eXXcMA8tVGMJQsD/view?usp=drive_link", "_blank")}>
+                    <button className="download-btn" onClick={() => window.open("https://drive.google.com/drive/folders/1_ThcoK7xsQt67BeES4K8iBBipiRxoyec", "_blank")}>
                         download Casparcg Server
                     </button>
                     {expiresAt && (
