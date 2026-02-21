@@ -9,7 +9,8 @@ import {
     useCallStateHooks,
     StreamTheme,
     CallControls,
-    StreamVideoClient
+    StreamVideoClient,
+    useCall
 } from "@stream-io/video-react-sdk";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 
@@ -91,14 +92,36 @@ export default function CallerWithTokenPage({ params }) {
 }
 
 function MeetingUI({ roomid }) {
-    const { useParticipants, useLocalParticipant } = useCallStateHooks();
+    const { useCallSession, useParticipants, useLocalParticipant } = useCallStateHooks();
     const participants = useParticipants();
     const localParticipant = useLocalParticipant();
+    const call = useCall();
 
-    // Find the host (user starting with 'host-')
     const host = participants.find((p) => p.userId.includes(roomid + "_host"));
 
     const [isFinished, setIsFinished] = useState(false);
+
+    // Listen for the "Host Removed" or "Call Ended" event
+    useEffect(() => {
+        if (!call) return;
+
+        const handleCallEvent = (event) => {
+            // Check if the local user was the one removed
+            if (event.type === 'call.session_participant_left' &&
+                event.participant.user.id === call.currentUserId) {
+                setIsFinished(true);
+            }
+
+            // Or if the host ended the call for everyone
+            if (event.type === 'call.ended') {
+                setIsFinished(true);
+            }
+        };
+
+        const unsubscribe = call.on('all', handleCallEvent);
+
+        return () => unsubscribe();
+    }, [call, setIsFinished]);
 
     if (isFinished) {
         return (
