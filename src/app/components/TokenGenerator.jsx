@@ -132,7 +132,14 @@ export default function TokenGeneratorWithDuration({
 
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         <button type="button" onClick={copyUrl}>Copy URL</button>
-                        <button type="button" onClick={() => window.open(callerUrl, "_blank")}>Test URL</button>
+                        <button type="button" onClick={() => {
+                            //  window.open(callerUrl, "_blank");
+
+                            const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
+
+                            window.open(callerUrl, "GuestWindow", features);
+
+                        }}>Test URL</button>
                     </div>
                     <button className="download-btn" onClick={() => window.open("https://drive.google.com/file/d/1sOYjJeLWChslTD-p1eXXcMA8tVGMJQsD/view?usp=drive_link", "_blank")}>
                         download Casparcg Server
