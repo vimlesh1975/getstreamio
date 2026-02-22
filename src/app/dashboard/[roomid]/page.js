@@ -69,7 +69,12 @@ function ProgramPreviewGrid({ roomid }) {
                       Initialise CH {i + 1}
                     </button>
                     <button onClick={() => {
-                      window.open(`${window.location.origin}/program?out=${i + 1}&room=${roomid}`, "_blank")
+                      // window.open(`${window.location.origin}/program?out=${i + 1}&room=${roomid}`, "_blank")
+
+                      const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
+
+                      window.open(`${window.location.origin}/program?out=${i + 1}&room=${roomid}`, "HDMI", features);
+
                     }}>for HDMI</button>
                   </>)
                   }
