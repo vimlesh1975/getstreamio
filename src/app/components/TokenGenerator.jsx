@@ -30,7 +30,7 @@ export default function TokenGeneratorWithDuration({
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    userId,
+                    userId: userId.trim().toUpperCase().replace(/\s+/g, '_'),
                     durationMinutes: duration,
                 }),
             });
