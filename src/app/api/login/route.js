@@ -21,7 +21,7 @@ export async function POST(req) {
             });
 
             // 3. Set the secure cookie
-            response.cookies.set("auth", "true", {
+            response.cookies.set("auth", username, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
                 sameSite: "lax",
