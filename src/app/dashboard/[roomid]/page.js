@@ -338,9 +338,10 @@ function HostInner({ roomid }) {
         </div>
         <div>
           <div>
-            <button onClick={() => {
-              setShowTokenGenerator(!showTokenGenerator);
-            }}>{showTokenGenerator ? 'Hide TokenGenerator' : 'show TokenGenerator'} </button>
+            <button onClick={() => setShowTokenGenerator(!showTokenGenerator)}>
+              {showTokenGenerator ? '✖️ Close Generator' : '🎫 Invite Guest'}
+            </button>
+
           </div>
           {showTokenGenerator &&
             <div>
