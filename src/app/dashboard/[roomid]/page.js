@@ -228,6 +228,9 @@ function HostInner({ roomid }) {
         <div className="glass-panel">
           <h1>🎙️ Studio Monitor</h1>
           <p style={{ color: '#94a3b8' }}>Ready to manage the broadcast gallery?</p>
+          <button onClick={() => {
+            window.open("/decklink-init.html", "_blank")
+          }}>Open decklink selector</button>
           <button
             className="start-btn"
             disabled={!hasCaller}
@@ -246,23 +249,35 @@ function HostInner({ roomid }) {
         <h2 style={{ margin: 0 }}>📍 STUDIO: {roomid?.replace(/_/g, " ")}</h2>
       </div>
       <span style={{ color: '#64748b' }}>DD Caller</span>  CONNECTED SOURCES: {visibleCallers.length}
-      <button onClick={async () => {
-        await fetch("/api/logout", { method: "POST" });
-        location.href = "/";
-      }}>
-        Logout
-      </button>
-
       <button
-        onClick={endCallForAll}
         style={{
-          background: "#ef4444",
+          background: "#0023a1",
           color: "white",
           padding: "12px 20px",
           borderRadius: 8,
           border: "none",
           fontWeight: "bold",
           cursor: "pointer",
+          marginLeft: "10px"
+        }}
+        onClick={async () => {
+          await fetch("/api/logout", { method: "POST" });
+          location.href = "/";
+        }}>
+        Logout
+      </button>
+
+      <button
+        onClick={endCallForAll}
+        style={{
+          background: "#0023a1",
+          color: "white",
+          padding: "12px 20px",
+          borderRadius: 8,
+          border: "none",
+          fontWeight: "bold",
+          cursor: "pointer",
+          marginLeft: "10px"
         }}
       >
         🔴 END CALL (ALL)
@@ -272,7 +287,7 @@ function HostInner({ roomid }) {
           setMuteAudio(val => !val);
         }}
         style={{
-          background: "#f59e0b", // Amber/Orange color
+          background: "#0023a1",
           color: "white",
           padding: "12px 20px",
           borderRadius: 8,
@@ -355,7 +370,8 @@ function HostInner({ roomid }) {
                 roomid={roomid}
                 defaultUserId={`${roomid}-${Date.now()}`}
               />
-              <DecklinkSelector />
+              {/* <DecklinkSelector /> */}
+
             </div>}
 
         </div>
