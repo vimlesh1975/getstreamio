@@ -27,8 +27,8 @@ function ProgramLoader() {
   // 👈 1. Get the room ID from the URL (e.g., ?room=Studio_Alpha)
   const roomid = params.get("room");
 
-  const userId = `program-${out}-${roomid}`; // Unique ID per room/output
-  const programKey = `program${out}`;
+  const userId = `Out-${out}-${roomid}`; // Unique ID per room/output
+  const programKey = `Out${out}`;
 
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);

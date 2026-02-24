@@ -47,9 +47,9 @@ function ProgramPreviewGrid({ roomid }) {
   return (
     <div style={{ display: 'flex', gap: '40px', marginTop: 30, borderTop: "1px solid #cbd5e1", paddingTop: 20, }}>
       <div>
-        <h3 style={{ color: '#475569', fontSize: '0.9rem', marginBottom: 15 }}>🎬 PROGRAM PREVIEWS</h3>
+        <h3 style={{ color: '#475569', fontSize: '0.9rem', marginBottom: 15 }}>🎬 Out Preview</h3>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", maxWidth: 850 }}>
-          {["program1", "program2", "program3", "program4"].map((key, i) => {
+          {["Out1", "Out2", "Out3", "Out4"].map((key, i) => {
             const userId = programs[key];
             const participant = getParticipant(userId);
             return (
@@ -219,7 +219,7 @@ function HostInner({ roomid }) {
     }
   }, []);
 
-  const visibleCallers = participants.filter((p) => !p.userId.startsWith("program"));
+  const visibleCallers = participants.filter((p) => !p.userId.startsWith("Out"));
   const hasCaller = visibleCallers.length > 0;
 
   if (!accepted) {
@@ -338,13 +338,13 @@ function HostInner({ roomid }) {
               </div>
 
               <div className="take-grid">
-                {["program1", "program2", "program3", "program4"].map((p) => (
+                {["Out1", "Out2", "Out3", "Out4"].map((p) => (
                   <button
                     key={p}
                     onClick={() => setLive(p, caller.userId)}
                     className={`take-button ${programs[p] === caller.userId ? 'active' : ''}`}
                   >
-                    PGM {p.slice(-1)}
+                    OUT {p.slice(-1)}
                   </button>
                 ))}
               </div>
