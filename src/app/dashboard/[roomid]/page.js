@@ -69,14 +69,20 @@ function ProgramPreviewGrid({ roomid }) {
                     >
                       Initialise CH {i + 1}
                     </button>
-                    <button onClick={() => {
-                      // window.open(`${window.location.origin}/program?out=${i + 1}&room=${roomid}`, "_blank")
+                    <button
+                      onClick={() => {
+                        const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
 
-                      const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
+                        // 1. Create a unique name for each channel (e.g., HDMI_1, HDMI_2, etc.)
+                        const windowName = `HDMI_${i + 1}`;
 
-                      window.open(`${window.location.origin}/program?out=${i + 1}&room=${roomid}`, "HDMI", features);
-
-                    }}>for HDMI</button>
+                        window.open(
+                          `${window.location.origin}/program?out=${i + 1}&room=${roomid}`,
+                          windowName, // 👈 This makes each window independent
+                          features
+                        );
+                      }}
+                    >for HDMI</button>
                   </>)
                   }
                 </div>
