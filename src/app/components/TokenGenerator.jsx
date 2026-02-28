@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { QRCodeSVG } from "qrcode.react";
 
 export default function TokenGeneratorWithDuration({
     defaultUserId = "",
@@ -140,6 +141,15 @@ export default function TokenGeneratorWithDuration({
                             window.open(callerUrl, "GuestWindow", features);
 
                         }}>Test URL</button>
+                    </div>
+
+                    <div style={{ background: 'white', padding: '10px', borderRadius: '4px', marginBottom: '10px' }}>
+                        <QRCodeSVG
+                            value={callerUrl}
+                            size={160}
+                            level={"H"} // High error correction
+                            includeMargin={false}
+                        />
                     </div>
                     <button className="download-btn" onClick={() => window.open("https://drive.google.com/drive/folders/1_ThcoK7xsQt67BeES4K8iBBipiRxoyec", "_blank")}>
                         download Casparcg Server
