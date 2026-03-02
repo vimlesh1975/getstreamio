@@ -11,7 +11,6 @@ import {
 import { createStreamClient } from "@/lib/hoststream";
 
 import TokenGeneratorWithDuration from '../../components/TokenGenerator';
-import DecklinkSelector from '../../components/DecklinkSelector';
 
 /**
  * API utility to trigger CasparCG actions
@@ -376,8 +375,6 @@ function HostInner({ roomid }) {
                 roomid={roomid}
                 defaultUserId={`${roomid}-${Date.now()}`}
               />
-              {/* <DecklinkSelector /> */}
-
             </div>}
 
         </div>
