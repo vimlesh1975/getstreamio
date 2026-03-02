@@ -8,24 +8,31 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding: 30px;
+            padding: 20px;
             line-height: 1.6;
+            background: #f4f6f9;
         }
 
         .control-panel {
-            background: #f8f9fa;
+            background: #ffffff;
             border: 1px solid #dee2e6;
             padding: 20px;
-            border-radius: 10px;
-            max-width: 600px;
-            margin: 0 auto;
+            border-radius: 8px;
+            max-width: 400px;
+            /* Smaller panel */
+            margin: 0;
+            /* Left aligned */
+        }
+
+        h3 {
+            margin-top: 0;
         }
 
         select {
             width: 100%;
-            padding: 10px;
-            margin: 15px 0;
-            border-radius: 5px;
+            padding: 8px;
+            margin: 10px 0;
+            border-radius: 4px;
             border: 1px solid #ccc;
         }
 
@@ -33,25 +40,35 @@
             background-color: #28a745;
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 5px;
+            padding: 10px;
+            border-radius: 4px;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
             width: 100%;
+            margin-bottom: 8px;
         }
 
         button:hover {
-            background-color: #218838;
+            opacity: 0.9;
+        }
+
+        #muteBtn {
+            background-color: #007bff;
         }
 
         video {
-            width: 100%;
-            max-width: 960px;
-            margin-top: 30px;
+            width: 420px;
+            /* Smaller video */
+            height: auto;
+            margin-top: 20px;
             background: #000;
             display: none;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .video-container {
+            margin-top: 15px;
         }
 
         .id-display {
