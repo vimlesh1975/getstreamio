@@ -155,7 +155,7 @@
             }
 
             // Strict constraints for Decklink
-            const constraints = { audio: { sampleRate: 48000, channelCount: 2, echoCancellation: false, noiseSuppression: false, autoGainControl: false }, video: { deviceId: { exact: targetId }, width: 1920, height: 1080, frameRate: 25 } };
+            const constraints = { audio: { sampleRate: 48000, channelCount: 2, echoCancellation: false, noiseSuppression: false, autoGainControl: false }, video: { deviceId: { exact: targetId }, width: 1920, height: 1080, frameRate: { ideal: 25 } } };
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -164,8 +164,15 @@
 
                 video.style.display = "block";
                 video.onloadedmetadata = () => video.play();
+                video.playbackRate = 1.0;
 
                 console.log("Stream started with ID:", targetId);
+
+                const vTrack = stream.getVideoTracks()[0];
+                const aTrack = stream.getAudioTracks()[0];
+
+                console.log("Video:", vTrack.getSettings());
+                console.log("Audio:", aTrack.getSettings());
             } catch (error) {
                 console.error("Stream Error:", error);
                 alert("Error: " + error.name + "\nThis often happens if the device is busy or format is unsupported.");
