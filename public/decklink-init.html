@@ -72,10 +72,13 @@
         <div id="selectedIdDisplay" class="id-display">ID: (Select a device)</div>
         <br>
         <button id="startBtn">Initialize Stream</button>
+        <button id="muteBtn" style="margin-top:10px; background-color:#007bff;">
+            Unmute Audio
+        </button>
     </div>
 
     <div style="text-align: center;">
-        <video id="videoPlayer" playsinline autoplay></video>
+        <video id="videoPlayer" playsinline autoplay muted></video>
     </div>
 
     <script>
@@ -83,6 +86,21 @@
         const startBtn = document.getElementById('startBtn');
         const video = document.getElementById('videoPlayer');
         const idDisplay = document.getElementById('selectedIdDisplay');
+        const muteBtn = document.getElementById('muteBtn');
+
+        muteBtn.addEventListener('click', () => {
+            if (!video.srcObject) return; // No stream yet
+
+            video.muted = !video.muted;
+
+            if (video.muted) {
+                muteBtn.innerText = "Unmute Audio";
+                muteBtn.style.backgroundColor = "#007bff";
+            } else {
+                muteBtn.innerText = "Mute Audio";
+                muteBtn.style.backgroundColor = "#dc3545";
+            }
+        });
 
         /**
          * 1. Populate the Combo Box with Names and IDs
@@ -137,15 +155,7 @@
             }
 
             // Strict constraints for Decklink
-            const constraints = {
-                audio: false,
-                video: {
-                    deviceId: { exact: targetId }, // Apply the ID from the select box
-                    width: 1920,
-                    height: 1080,
-                    frameRate: 25
-                }
-            };
+            const constraints = { audio: { sampleRate: 48000, channelCount: 2, echoCancellation: false, noiseSuppression: false, autoGainControl: false }, video: { deviceId: { exact: targetId }, width: 1920, height: 1080, frameRate: 25 } };
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
