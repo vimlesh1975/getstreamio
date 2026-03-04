@@ -88,10 +88,17 @@
         <select id="videoSource"></select>
         <div id="selectedIdDisplay" class="id-display">ID: (Select a device)</div>
         <br>
+        <!-- controls -->
         <button id="startBtn">Initialize Stream</button>
         <button id="muteBtn" style="margin-top:10px; background-color:#007bff;">
             Unmute Audio
         </button>
+        <button id="recordBtn" style="background:#dc3545;">Start Recording</button>
+        <!-- duration dropdown immediately left of continuous button -->
+        <div style="display:inline-block; vertical-align:middle;">
+            <select id="durationSelect" style="width:70px; padding:5px; font-size:0.9em;"></select>
+        </div>
+        <button id="continuousRecordBtn" style="background:#6f42c1; margin-top:10px; padding:5px 8px; font-size:0.9em; width:auto;">Start Continuous (min)</button>
     </div>
 
     <div style="text-align: center;">
@@ -105,6 +112,151 @@
         const idDisplay = document.getElementById('selectedIdDisplay');
         const muteBtn = document.getElementById('muteBtn');
 
+        const recordBtn = document.getElementById('recordBtn');
+        const durationSelect = document.getElementById('durationSelect');
+        // store duration as seconds and a human-friendly label
+        let selectedDurationSeconds = 60; // default 1 minute
+        let selectedDurationLabel = '1 min';
+
+let mediaRecorder;
+let recordedChunks = [];
+let continuousMediaRecorder = null;
+let isContinuousRecording = false;
+
+const continuousRecordBtn = document.getElementById('continuousRecordBtn');
+
+continuousRecordBtn.addEventListener("click", () => {
+    if (!window.stream) {
+        alert("Start the stream first");
+        return;
+    }
+
+    if (!isContinuousRecording) {
+        // START continuous recording
+        isContinuousRecording = true;
+        continuousRecordBtn.innerText = `Stop Continuous (${selectedDurationLabel})`;
+        continuousRecordBtn.style.backgroundColor = "#6c757d";
+        recordNextSegment();
+    } else {
+        // STOP continuous recording
+        isContinuousRecording = false;
+        if (continuousMediaRecorder && continuousMediaRecorder.state === "recording") {
+            continuousMediaRecorder.stop();
+        }
+        continuousRecordBtn.innerText = `Start Continuous (${selectedDurationLabel})`;
+        continuousRecordBtn.style.backgroundColor = "#6f42c1";
+    }
+});
+
+function recordNextSegment() {
+    if (!isContinuousRecording || !window.stream) return;
+
+    let continuousChunks = [];
+    let mimeType = "video/webm;codecs=vp9,opus";
+    if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = "video/webm";
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+            mimeType = "video/mp4";
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+                mimeType = "";
+            }
+        }
+    }
+
+    continuousMediaRecorder = new MediaRecorder(window.stream, { mimeType });
+
+    continuousMediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+            continuousChunks.push(event.data);
+        }
+    };
+
+    continuousMediaRecorder.onstop = () => {
+        const blob = new Blob(continuousChunks, { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${timestamp}.webm`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        // automatically start next segment if still recording
+        if (isContinuousRecording) {
+            recordNextSegment();
+        }
+    };
+
+    continuousMediaRecorder.start();
+    
+    // stop after selected duration
+    setTimeout(() => {
+        if (continuousMediaRecorder && continuousMediaRecorder.state === "recording") {
+            continuousMediaRecorder.stop();
+        }
+    }, selectedDurationSeconds * 1000);
+}
+
+recordBtn.addEventListener("click", () => {
+
+    if (!window.stream) {
+        alert("Start the stream first");
+        return;
+    }
+
+    // If recorder not started → START
+    if (!mediaRecorder || mediaRecorder.state === "inactive") {
+
+        recordedChunks = [];
+
+        // Detect supported mime type with fallback
+        let mimeType = "video/webm;codecs=vp9,opus";
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+            mimeType = "video/webm";
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+                mimeType = "video/mp4";
+                if (!MediaRecorder.isTypeSupported(mimeType)) {
+                    mimeType = ""; // Let browser choose
+                }
+            }
+        }
+
+        mediaRecorder = new MediaRecorder(window.stream, { mimeType });
+
+        mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                recordedChunks.push(event.data);
+            }
+        };
+
+        mediaRecorder.onstop = () => {
+
+            const blob = new Blob(recordedChunks, { type: mimeType });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "decklink_recording.webm";
+            a.click();
+
+            URL.revokeObjectURL(url);
+        };
+
+        mediaRecorder.start();
+
+        recordBtn.innerText = "Stop Recording";
+        recordBtn.style.backgroundColor = "#6c757d";
+
+    } else {
+
+        // STOP recording
+        mediaRecorder.stop();
+
+        recordBtn.innerText = "Start Recording";
+        recordBtn.style.backgroundColor = "#dc3545";
+    }
+
+});
         muteBtn.addEventListener('click', () => {
             if (!video.srcObject) return; // No stream yet
 
@@ -146,8 +298,40 @@
                     idDisplay.innerText = "Target ID: " + videoSelect.value;
                 };
 
+                // populate duration dropdown: 10 sec plus 1 through 60 minutes
+                durationSelect.innerHTML = '';
+                // ten seconds option
+                let opt = document.createElement('option');
+                opt.value = 10; // seconds
+                opt.text = '10 sec';
+                if (selectedDurationSeconds === 10) opt.selected = true;
+                durationSelect.appendChild(opt);
+
+                for (let i = 1; i <= 60; i++) {
+                    opt = document.createElement('option');
+                    opt.value = i * 60; // seconds
+                    opt.text = `${i} min`;
+                    if (selectedDurationSeconds === i * 60) opt.selected = true;
+                    durationSelect.appendChild(opt);
+                }
+
+                durationSelect.onchange = () => {
+                    selectedDurationSeconds = parseInt(durationSelect.value, 10);
+                    // compute human label
+                    if (selectedDurationSeconds === 10) {
+                        selectedDurationLabel = '10 sec';
+                    } else {
+                        selectedDurationLabel = `${selectedDurationSeconds / 60} min`;
+                    }
+                    // update button text
+                    continuousRecordBtn.innerText = isContinuousRecording ?
+                        `Stop Continuous (${selectedDurationLabel})` :
+                        `Start Continuous (${selectedDurationLabel})`;
+                };
+
                 // Trigger initial display
                 if (videoSelect.options.length > 0) videoSelect.onchange();
+
 
             } catch (err) {
                 console.error("Initialization error:", err);
@@ -172,7 +356,7 @@
             }
 
             // Strict constraints for Decklink
-            const constraints = { audio: { sampleRate: 48000, channelCount: 2, echoCancellation: false, noiseSuppression: false, autoGainControl: false }, video: { deviceId: { exact: targetId }, width: 1920, height: 1080, frameRate: { ideal: 25 } } };
+            const constraints = { audio: { sampleRate: 48000, channelCount: 2, echoCancellation: false, noiseSuppression: false, autoGainControl: false }, video: { deviceId: { exact: targetId } } };
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -192,7 +376,22 @@
                 console.log("Audio:", aTrack.getSettings());
             } catch (error) {
                 console.error("Stream Error:", error);
-                alert("Error: " + error.name + "\nThis often happens if the device is busy or format is unsupported.");
+                // Try fallback constraints with lower resolution
+                try {
+                    const fallbackConstraints = {
+                        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+                        video: { deviceId: { exact: targetId }, width: 1280, height: 720, frameRate: { ideal: 30 } }
+                    };
+                    const fallbackStream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+                    window.stream = fallbackStream;
+                    video.srcObject = fallbackStream;
+                    video.style.display = "block";
+                    video.onloadedmetadata = () => video.play();
+                    console.log("Stream started with fallback constraints");
+                } catch (fallbackError) {
+                    console.error("Stream Error:", error);
+                    alert("Error: " + error.name + "\nTried fallback constraints but still failed.");
+                }
             }
         }
 
