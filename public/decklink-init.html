@@ -98,7 +98,9 @@
         <div style="display:inline-block; vertical-align:middle;">
             <select id="durationSelect" style="width:70px; padding:5px; font-size:0.9em;"></select>
         </div>
-        <button id="continuousRecordBtn" style="background:#6f42c1; margin-top:10px; padding:5px 8px; font-size:0.9em; width:auto;">Start Continuous (min)</button>
+        <button id="continuousRecordBtn"
+            style="background:#6f42c1; margin-top:10px; padding:5px 8px; font-size:0.9em; width:auto;">Start Continuous
+            (min)</button>
     </div>
 
     <div style="text-align: center;">
@@ -118,145 +120,145 @@
         let selectedDurationSeconds = 60; // default 1 minute
         let selectedDurationLabel = '1 min';
 
-let mediaRecorder;
-let recordedChunks = [];
-let continuousMediaRecorder = null;
-let isContinuousRecording = false;
+        let mediaRecorder;
+        let recordedChunks = [];
+        let continuousMediaRecorder = null;
+        let isContinuousRecording = false;
 
-const continuousRecordBtn = document.getElementById('continuousRecordBtn');
+        const continuousRecordBtn = document.getElementById('continuousRecordBtn');
 
-continuousRecordBtn.addEventListener("click", () => {
-    if (!window.stream) {
-        alert("Start the stream first");
-        return;
-    }
-
-    if (!isContinuousRecording) {
-        // START continuous recording
-        isContinuousRecording = true;
-        continuousRecordBtn.innerText = `Stop Continuous (${selectedDurationLabel})`;
-        continuousRecordBtn.style.backgroundColor = "#6c757d";
-        recordNextSegment();
-    } else {
-        // STOP continuous recording
-        isContinuousRecording = false;
-        if (continuousMediaRecorder && continuousMediaRecorder.state === "recording") {
-            continuousMediaRecorder.stop();
-        }
-        continuousRecordBtn.innerText = `Start Continuous (${selectedDurationLabel})`;
-        continuousRecordBtn.style.backgroundColor = "#6f42c1";
-    }
-});
-
-function recordNextSegment() {
-    if (!isContinuousRecording || !window.stream) return;
-
-    let continuousChunks = [];
-    let mimeType = "video/webm;codecs=vp9,opus";
-    if (!MediaRecorder.isTypeSupported(mimeType)) {
-        mimeType = "video/webm";
-        if (!MediaRecorder.isTypeSupported(mimeType)) {
-            mimeType = "video/mp4";
-            if (!MediaRecorder.isTypeSupported(mimeType)) {
-                mimeType = "";
+        continuousRecordBtn.addEventListener("click", () => {
+            if (!window.stream) {
+                alert("Start the stream first");
+                return;
             }
-        }
-    }
 
-    continuousMediaRecorder = new MediaRecorder(window.stream, { mimeType });
+            if (!isContinuousRecording) {
+                // START continuous recording
+                isContinuousRecording = true;
+                continuousRecordBtn.innerText = `Stop Continuous (${selectedDurationLabel})`;
+                continuousRecordBtn.style.backgroundColor = "#6c757d";
+                recordNextSegment();
+            } else {
+                // STOP continuous recording
+                isContinuousRecording = false;
+                if (continuousMediaRecorder && continuousMediaRecorder.state === "recording") {
+                    continuousMediaRecorder.stop();
+                }
+                continuousRecordBtn.innerText = `Start Continuous (${selectedDurationLabel})`;
+                continuousRecordBtn.style.backgroundColor = "#6f42c1";
+            }
+        });
 
-    continuousMediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-            continuousChunks.push(event.data);
-        }
-    };
+        function recordNextSegment() {
+            if (!isContinuousRecording || !window.stream) return;
 
-    continuousMediaRecorder.onstop = () => {
-        const blob = new Blob(continuousChunks, { type: mimeType });
-        const url = URL.createObjectURL(blob);
-        const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${timestamp}.webm`;
-        a.click();
-        URL.revokeObjectURL(url);
-
-        // automatically start next segment if still recording
-        if (isContinuousRecording) {
-            recordNextSegment();
-        }
-    };
-
-    continuousMediaRecorder.start();
-    
-    // stop after selected duration
-    setTimeout(() => {
-        if (continuousMediaRecorder && continuousMediaRecorder.state === "recording") {
-            continuousMediaRecorder.stop();
-        }
-    }, selectedDurationSeconds * 1000);
-}
-
-recordBtn.addEventListener("click", () => {
-
-    if (!window.stream) {
-        alert("Start the stream first");
-        return;
-    }
-
-    // If recorder not started → START
-    if (!mediaRecorder || mediaRecorder.state === "inactive") {
-
-        recordedChunks = [];
-
-        // Detect supported mime type with fallback
-        let mimeType = "video/webm;codecs=vp9,opus";
-        if (!MediaRecorder.isTypeSupported(mimeType)) {
-            mimeType = "video/webm";
+            let continuousChunks = [];
+            let mimeType = "video/webm;codecs=vp9,opus";
             if (!MediaRecorder.isTypeSupported(mimeType)) {
-                mimeType = "video/mp4";
+                mimeType = "video/webm";
                 if (!MediaRecorder.isTypeSupported(mimeType)) {
-                    mimeType = ""; // Let browser choose
+                    mimeType = "video/mp4";
+                    if (!MediaRecorder.isTypeSupported(mimeType)) {
+                        mimeType = "";
+                    }
                 }
             }
+
+            continuousMediaRecorder = new MediaRecorder(window.stream, { mimeType });
+
+            continuousMediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    continuousChunks.push(event.data);
+                }
+            };
+
+            continuousMediaRecorder.onstop = () => {
+                const blob = new Blob(continuousChunks, { type: mimeType });
+                const url = URL.createObjectURL(blob);
+                const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `${timestamp}.webm`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                // automatically start next segment if still recording
+                if (isContinuousRecording) {
+                    recordNextSegment();
+                }
+            };
+
+            continuousMediaRecorder.start();
+
+            // stop after selected duration
+            setTimeout(() => {
+                if (continuousMediaRecorder && continuousMediaRecorder.state === "recording") {
+                    continuousMediaRecorder.stop();
+                }
+            }, selectedDurationSeconds * 1000);
         }
 
-        mediaRecorder = new MediaRecorder(window.stream, { mimeType });
+        recordBtn.addEventListener("click", () => {
 
-        mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-                recordedChunks.push(event.data);
+            if (!window.stream) {
+                alert("Start the stream first");
+                return;
             }
-        };
 
-        mediaRecorder.onstop = () => {
+            // If recorder not started → START
+            if (!mediaRecorder || mediaRecorder.state === "inactive") {
 
-            const blob = new Blob(recordedChunks, { type: mimeType });
-            const url = URL.createObjectURL(blob);
+                recordedChunks = [];
 
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "decklink_recording.webm";
-            a.click();
+                // Detect supported mime type with fallback
+                let mimeType = "video/webm;codecs=vp9,opus";
+                if (!MediaRecorder.isTypeSupported(mimeType)) {
+                    mimeType = "video/webm";
+                    if (!MediaRecorder.isTypeSupported(mimeType)) {
+                        mimeType = "video/mp4";
+                        if (!MediaRecorder.isTypeSupported(mimeType)) {
+                            mimeType = ""; // Let browser choose
+                        }
+                    }
+                }
 
-            URL.revokeObjectURL(url);
-        };
+                mediaRecorder = new MediaRecorder(window.stream, { mimeType });
 
-        mediaRecorder.start();
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
 
-        recordBtn.innerText = "Stop Recording";
-        recordBtn.style.backgroundColor = "#6c757d";
+                mediaRecorder.onstop = () => {
 
-    } else {
+                    const blob = new Blob(recordedChunks, { type: mimeType });
+                    const url = URL.createObjectURL(blob);
 
-        // STOP recording
-        mediaRecorder.stop();
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "decklink_recording.webm";
+                    a.click();
 
-        recordBtn.innerText = "Start Recording";
-        recordBtn.style.backgroundColor = "#dc3545";
-    }
+                    URL.revokeObjectURL(url);
+                };
 
-});
+                mediaRecorder.start();
+
+                recordBtn.innerText = "Stop Recording";
+                recordBtn.style.backgroundColor = "#6c757d";
+
+            } else {
+
+                // STOP recording
+                mediaRecorder.stop();
+
+                recordBtn.innerText = "Start Recording";
+                recordBtn.style.backgroundColor = "#dc3545";
+            }
+
+        });
         muteBtn.addEventListener('click', () => {
             if (!video.srcObject) return; // No stream yet
 
@@ -356,7 +358,7 @@ recordBtn.addEventListener("click", () => {
             }
 
             // Strict constraints for Decklink
-            const constraints = { audio: { sampleRate: 48000, channelCount: 2, echoCancellation: false, noiseSuppression: false, autoGainControl: false }, video: { deviceId: { exact: targetId } } };
+            const constraints = { audio: { sampleRate: 48000, channelCount: 2, echoCancellation: false, noiseSuppression: false, autoGainControl: false }, video: { deviceId: { exact: targetId }, width: 1920, height: 1080, frameRate: { ideal: 25 } } };
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
