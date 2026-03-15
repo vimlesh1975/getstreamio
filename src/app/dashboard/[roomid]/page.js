@@ -71,13 +71,10 @@ function ProgramPreviewGrid({ roomid }) {
                     <button
                       onClick={() => {
                         const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
-
-                        // 1. Create a unique name for each channel (e.g., HDMI_1, HDMI_2, etc.)
                         const windowName = `HDMI_${i + 1}`;
-
                         window.open(
                           `${window.location.origin}/program?out=${i + 1}&room=${roomid}`,
-                          windowName, // 👈 This makes each window independent
+                          windowName,
                           features
                         );
                       }}
@@ -90,7 +87,6 @@ function ProgramPreviewGrid({ roomid }) {
           })}
         </div>
       </div>
-
 
 
     </div>
@@ -379,7 +375,42 @@ function HostInner({ roomid }) {
 
         </div>
       </div>
+      <div style={{ marginTop: 100 }}>
+        <button
+          onClick={() => {
+            const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
+            const windowName = `shot_2`;
+            window.open(
+              `${window.location.origin}/twoshot?out=${1}&room=${roomid}`,
+              windowName,
+              features
+            );
+          }}
+        >2 Shot</button>
+        <button
+          onClick={() => {
+            const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
+            const windowName = `shot_3`;
+            window.open(
+              `${window.location.origin}/threeshot?out=${1}&room=${roomid}`,
+              windowName,
+              features
+            );
+          }}
+        >3 Shot</button>
+        <button
+          onClick={() => {
+            const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
+            const windowName = `shot_4`;
+            window.open(
+              `${window.location.origin}/fourshot?out=${1}&room=${roomid}`,
+              windowName,
+              features
+            );
+          }}
+        >4 Shot</button>
 
+      </div>
 
       <style jsx>{`
         :global(body) {
