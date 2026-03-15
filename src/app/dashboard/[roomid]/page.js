@@ -375,7 +375,7 @@ function HostInner({ roomid }) {
 
         </div>
       </div>
-      <div style={{ marginTop: 100 }}>
+      <div style={{ marginTop: 50 }}>
         <button
           onClick={() => {
             const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
