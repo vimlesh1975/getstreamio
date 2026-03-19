@@ -7,6 +7,8 @@ import {
   ParticipantView,
   useCall,
   useCallStateHooks,
+  StreamTheme,
+  CallControls,
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/hoststream";
 
@@ -138,7 +140,11 @@ export default function HostPage({ params }) {
   return (
     <StreamVideo client={client}>
       <StreamCall call={call}>
-        <HostInner roomid={roomid} />
+        <StreamTheme>
+          <HostInner roomid={roomid} />
+          <CallControls />
+        </StreamTheme>
+
       </StreamCall>
     </StreamVideo>
   );
