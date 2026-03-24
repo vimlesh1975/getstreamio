@@ -425,6 +425,41 @@ function HostInner({ roomid }) {
           color: #0f172a;
           font-family: 'Inter', system-ui, sans-serif;
         }
+          /* 1. Target the dropdown container and menu backgrounds */
+:global(.str-video__menu-container), 
+:global(.str-video__generic-menu),
+:global(.str-video__participant-menu) {
+  background-color: #1c1f22 !important; 
+  color: white !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+/* 2. Target labels, buttons, and icons inside the menu */
+:global(.str-video__menu-item),
+:global(.str-video__generic-menu__item),
+:global(.str-video__icon-button),
+:global(.str-video__menu-item__label),
+:global(.str-video__menu-item__icon) {
+  color: white !important;
+}
+
+/* 3. Force SVG icons to be white */
+:global(.str-video__menu-item svg) {
+  fill: white !important;
+  color: white !important;
+}
+
+/* 4. Fix the hover state so text stays visible */
+:global(.str-video__menu-item:hover) {
+  background-color: #3b82f6 !important; /* Brighter blue for visibility */
+  color: white !important;
+}
+
+/* 5. Ensure button icons inside the menu are also white */
+:global(.str-video__button__icon) {
+  color: white !important;
+  fill: white !important;
+}
 
         .dashboard-container {
           padding: 30px;
