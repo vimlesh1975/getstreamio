@@ -326,6 +326,7 @@ function HostInner({ roomid }) {
               <div className="video-viewport">
                 <ParticipantView
                   participant={caller}
+                  trackType={caller.screenShareStream ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
                   mirror={false}
                   muteAudio={caller.userId.includes('host') ? true : muteAudio}
                   drawParticipantInfo={false}

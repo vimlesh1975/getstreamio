@@ -168,14 +168,23 @@ function MeetingUI({ roomid }) {
             <div className="video-grid">
                 {/* STUDIO FEED */}
                 <div className="video-tile">
-                    {host ? <ParticipantView participant={host} /> : <div className="status">Waiting for Studio...</div>}
+                    {host ?
+                        <ParticipantView
+                            participant={host}
+                            trackType={host.screenShareStream ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
+
+                        /> : <div className="status">Waiting for Studio...</div>}
                     <div className="name-badge">STUDIO ({roomid})</div>
                 </div>
 
                 {/* GUEST SELF-VIEW */}
                 <div className="video-tile">
                     {localParticipant ? (
-                        <ParticipantView participant={localParticipant} mirror={true} />
+                        <ParticipantView
+                            participant={localParticipant}
+                            trackType={localParticipant.screenShareStream ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
+
+                            mirror={true} />
                     ) : (
                         <div className="status">Initializing Camera...</div>
                     )}
