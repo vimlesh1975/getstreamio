@@ -9,6 +9,7 @@ import {
   useCallStateHooks,
   StreamTheme,
   CallControls,
+  SfuModels,
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/hoststream";
 
@@ -229,6 +230,10 @@ function HostInner({ roomid }) {
   const visibleCallers = participants.filter((p) => !p.userId.startsWith("Out"));
   const hasCaller = visibleCallers.length > 0;
 
+  const screenShareParticipant = participants.find((p) =>
+    p.publishedTracks.includes(SfuModels.TrackType.SCREEN_SHARE)
+  );
+
   if (!accepted) {
     return (
       <div className="onboarding-screen">
@@ -308,7 +313,20 @@ function HostInner({ roomid }) {
       </button>
 
       <div className="gallery-grid">
-        {visibleCallers.map((caller) => {
+
+
+        {/* {screenShareParticipant && (
+          <div className="video-tile screen-share-tile">
+            <ParticipantView
+              key={`${screenShareParticipant.userId}-screen`}
+              participant={screenShareParticipant}
+              trackType="screenShareTrack"
+            />
+            <div className="name-badge">PRESENTATION</div>
+          </div>
+        )} */}
+
+        {visibleCallers.map((caller, i) => {
           const isLive = Object.values(programs).includes(caller.userId);
           // Enhanced volume calculation for better visibility
           const volSens = Math.sqrt(caller.audioLevel) * 100;
@@ -325,8 +343,9 @@ function HostInner({ roomid }) {
 
               <div className="video-viewport">
                 <ParticipantView
+                  key={i}
                   participant={caller}
-                  trackType={caller.screenShareStream ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
+                  trackType={screenShareParticipant ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
                   mirror={false}
                   muteAudio={caller.userId.includes('host') ? true : muteAudio}
                   drawParticipantInfo={false}
