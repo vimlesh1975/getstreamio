@@ -10,7 +10,8 @@ import {
     StreamTheme,
     CallControls,
     StreamVideoClient,
-    useCall
+    useCall,
+    SfuModels
 } from "@stream-io/video-react-sdk";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 
@@ -101,6 +102,11 @@ function MeetingUI({ roomid }) {
 
     const [isFinished, setIsFinished] = useState(false);
 
+    const screenShareParticipant = participants.find((p) =>
+        p.publishedTracks.includes(SfuModels.TrackType.SCREEN_SHARE)
+    );
+
+
     // Listen for the "Host Removed" or "Call Ended" event
     useEffect(() => {
         if (!call) return;
@@ -168,14 +174,22 @@ function MeetingUI({ roomid }) {
             <div className="video-grid">
                 {/* STUDIO FEED */}
                 <div className="video-tile">
-                    {host ? <ParticipantView participant={host} /> : <div className="status">Waiting for Studio...</div>}
+                    {host ? <ParticipantView
+                        participant={host}
+                        trackType={(screenShareParticipant?.userId === host.userId) ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
+
+                    /> : <div className="status">Waiting for Studio...</div>}
                     <div className="name-badge">STUDIO ({roomid})</div>
                 </div>
 
                 {/* GUEST SELF-VIEW */}
                 <div className="video-tile">
                     {localParticipant ? (
-                        <ParticipantView participant={localParticipant} mirror={true} />
+                        <ParticipantView
+                            participant={localParticipant}
+                            trackType={(screenShareParticipant?.userId === localParticipant.userId) ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
+
+                            mirror={false} />
                     ) : (
                         <div className="status">Initializing Camera...</div>
                     )}

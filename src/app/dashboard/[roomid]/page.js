@@ -66,7 +66,7 @@ function ProgramPreviewGrid({ roomid }) {
                     <ParticipantView
                       mirror={false}
                       participant={participant}
-                      trackType={screenShareParticipant ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
+                      trackType={(screenShareParticipant?.userId === participant.userId) ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
 
                       muteAudio={true}
                       drawParticipantInfo={false}
@@ -346,7 +346,8 @@ function HostInner({ roomid }) {
                 <ParticipantView
                   key={i}
                   participant={caller}
-                  trackType={screenShareParticipant ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
+                  trackType={(screenShareParticipant?.userId === caller.userId) ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
+
                   mirror={false}
                   muteAudio={caller.userId.includes('host') ? true : muteAudio}
                   drawParticipantInfo={false}
