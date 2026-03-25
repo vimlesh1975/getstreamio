@@ -7,6 +7,7 @@ import {
   ParticipantView,
   useCall,
   useCallStateHooks,
+  SfuModels
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/stream";
 import { useSearchParams } from "next/navigation";
@@ -57,6 +58,11 @@ function HostInner() {
   const call = useCall();
   const { useParticipants } = useCallStateHooks();
   const participants = useParticipants();
+
+  const screenShareParticipant = participants.find((p) =>
+    p.publishedTracks.includes(SfuModels.TrackType.SCREEN_SHARE)
+  );
+
 
   useEffect(() => {
     call.camera.disable();
@@ -120,6 +126,8 @@ function HostInner() {
       ) : (
         <ParticipantView
           participant={hostParticipant}
+          trackType={(screenShareParticipant?.userId === hostParticipant.userId) ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
+
           drawParticipantInfo={false}
         />
       )}

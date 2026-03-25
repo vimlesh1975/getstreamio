@@ -9,7 +9,10 @@ import {
     StreamCall,
     SpeakerLayout,
     CallControls,
-    StreamTheme // 2. Import StreamTheme
+    StreamTheme, // 2. Import StreamTheme
+    SfuModels,
+    useCallStateHooks,
+
 } from "@stream-io/video-react-sdk";
 
 import { createStreamClient } from "@/lib/stream";
@@ -18,6 +21,12 @@ export default function MeetingPage() {
     const [client, setClient] = useState(null);
     const [call, setCall] = useState(null);
     const [userId] = useState(() => "caller-" + Math.random().toString(36).slice(2, 8));
+    const { useParticipants } = useCallStateHooks();
+
+    const participants = useParticipants();
+    const screenShareParticipant = participants.find((p) =>
+        p.publishedTracks.includes(SfuModels.TrackType.SCREEN_SHARE)
+    );
 
     useEffect(() => {
         async function init() {
