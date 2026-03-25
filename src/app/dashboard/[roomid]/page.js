@@ -483,7 +483,15 @@ function HostInner({ roomid }) {
   fill: white !important;
 }
 
-        .dashboard-container {
+:global(.str-video__screen-share-overlay__button) {
+    display: none !important;
+}
+
+:global(.str-video__screen-share-overlay__title){
+color: white !important;}
+}
+    
+.dashboard-container {
           padding: 30px;
           min-height: 100vh;
         }
