@@ -7,6 +7,7 @@ import {
   ParticipantView,
   useCall,
   useCallStateHooks,
+  SfuModels
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/stream";
 import { useSearchParams } from "next/navigation";
@@ -64,6 +65,10 @@ function ProgramInner({ programKey }) {
 
   const participants = useParticipants();
   const custom = useCallCustomData();
+
+  const screenShareParticipant = participants.find((p) =>
+    p.publishedTracks.includes(SfuModels.TrackType.SCREEN_SHARE)
+  );
 
   useEffect(() => {
     call.camera.disable();
@@ -142,6 +147,8 @@ function ProgramInner({ programKey }) {
             {/* 🔑 REQUIRED CHANGE: drawParticipantInfo={false} to help hide the label */}
             <ParticipantView
               participant={liveCaller}
+              trackType={screenShareParticipant ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
+
               drawParticipantInfo={false}
             />
           </div>
