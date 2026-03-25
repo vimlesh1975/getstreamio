@@ -7,6 +7,7 @@ import {
   ParticipantView,
   useCall,
   useCallStateHooks,
+  SfuModels
 } from "@stream-io/video-react-sdk";
 import { createStreamClient } from "@/lib/stream";
 import { useSearchParams } from "next/navigation";
@@ -63,7 +64,9 @@ function ProgramInner({ programKey }) {
 
   const participants = useParticipants();
   const custom = useCallCustomData();
-
+  const screenShareParticipant = participants.find((p) =>
+    p.publishedTracks.includes(SfuModels.TrackType.SCREEN_SHARE)
+  );
   useEffect(() => {
     call.camera.disable();
     call.microphone.disable();
@@ -140,19 +143,29 @@ function ProgramInner({ programKey }) {
         <div className="split-container">
           {caller1 && (
             <div className="video-box">
-              <ParticipantView participant={caller1} drawParticipantInfo={false} />
+              <ParticipantView participant={caller1}
+                trackType={(screenShareParticipant?.userId === caller1.userId) ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
+
+                drawParticipantInfo={false} />
             </div>
           )}
 
           {caller2 && (
             <div className="video-box">
-              <ParticipantView participant={caller2} drawParticipantInfo={false} />
+              <ParticipantView
+                participant={caller2}
+                trackType={(screenShareParticipant?.userId === caller2.userId) ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
+
+                drawParticipantInfo={false} />
             </div>
           )}
 
           {caller3 && (
             <div className="video-box">
-              <ParticipantView participant={caller3} drawParticipantInfo={false} />
+              <ParticipantView participant={caller3}
+                trackType={(screenShareParticipant?.userId === caller3.userId) ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
+
+                drawParticipantInfo={false} />
             </div>
           )}
         </div>

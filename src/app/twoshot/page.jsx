@@ -143,7 +143,7 @@ function ProgramInner({ programKey }) {
           <div className="video-box">
             <ParticipantView
               participant={liveCaller}
-              trackType={screenShareParticipant ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
+              trackType={(screenShareParticipant?.userId === liveCaller.userId) ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
 
               drawParticipantInfo={false}
             />
@@ -152,7 +152,12 @@ function ProgramInner({ programKey }) {
           {/* Right Guest - only shows if liveUserId2 is set */}
           {liveCaller2 && (
             <div className="video-box" style={{ borderLeft: '2px solid black' }}>
-              <ParticipantView participant={liveCaller2} drawParticipantInfo={false} />
+              <ParticipantView
+                participant={liveCaller2}
+                trackType={(screenShareParticipant?.userId === liveCaller2.userId) ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
+
+
+                drawParticipantInfo={false} />
             </div>
           )}
         </div>
