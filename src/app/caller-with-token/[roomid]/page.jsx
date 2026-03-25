@@ -10,8 +10,7 @@ import {
     StreamTheme,
     CallControls,
     StreamVideoClient,
-    useCall,
-    SfuModels
+    useCall
 } from "@stream-io/video-react-sdk";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 
@@ -91,77 +90,92 @@ export default function CallerWithTokenPage({ params }) {
         </StreamVideo>
     );
 }
+
 function MeetingUI({ roomid }) {
-    const { useParticipants, useLocalParticipant } = useCallStateHooks();
+    const { useCallSession, useParticipants, useLocalParticipant } = useCallStateHooks();
     const participants = useParticipants();
     const localParticipant = useLocalParticipant();
     const call = useCall();
-    const [isFinished, setIsFinished] = useState(false);
 
-    // 1. Identify participants and the active screen share
     const host = participants.find((p) => p.userId.includes(roomid + "_host"));
 
-    const screenShareParticipant = participants.find((p) =>
-        p.publishedTracks.includes(SfuModels.TrackType.SCREEN_SHARE)
-    );
+    const [isFinished, setIsFinished] = useState(false);
 
+    // Listen for the "Host Removed" or "Call Ended" event
     useEffect(() => {
         if (!call) return;
+
         const handleCallEvent = (event) => {
-            if ((event.type === 'call.session_participant_left' &&
-                event.participant.user.id === call.currentUserId) ||
-                event.type === 'call.ended') {
+            // Check if the local user was the one removed
+            if (event.type === 'call.session_participant_left' &&
+                event.participant.user.id === call.currentUserId) {
+                setIsFinished(true);
+            }
+
+            // Or if the host ended the call for everyone
+            if (event.type === 'call.ended') {
                 setIsFinished(true);
             }
         };
-        const unsubscribe = call.on('all', handleCallEvent);
-        return () => unsubscribe();
-    }, [call]);
 
-    if (isFinished) return <ExitScreen />; // Keep your existing exit logic
+        const unsubscribe = call.on('all', handleCallEvent);
+
+        return () => unsubscribe();
+    }, [call, setIsFinished]);
+
+    if (isFinished) {
+        return (
+            <div className="exit-screen">
+                <div className="exit-card">
+                    <div className="icon">🎬</div>
+                    <h1>Broadcast Finished</h1>
+                    <p>Thank you for participating in the session.</p>
+                    <div className="status-badge">SESSION DISCONNECTED</div>
+                </div>
+                <style jsx>{`
+                .exit-screen {
+                    height: 100vh;
+                    display: grid;
+                    place-items: center;
+                    background: #020617;
+                    font-family: sans-serif;
+                }
+                .exit-card {
+                    text-align: center;
+                    color: white;
+                    padding: 40px;
+                    border: 1px solid #1e293b;
+                    border-radius: 24px;
+                    background: rgba(15, 23, 42, 0.8);
+                }
+                .icon { font-size: 3rem; margin-bottom: 20px; }
+                p { color: #94a3b8; margin-bottom: 30px; }
+                .status-badge {
+                    display: inline-block;
+                    padding: 4px 12px;
+                    background: #334155;
+                    border-radius: 6px;
+                    font-size: 0.7rem;
+                    letter-spacing: 1px;
+                }
+            `}</style>
+            </div>
+        );
+    }
 
     return (
         <div className="main-container">
-            {/* 2. Grid class changes dynamically to accommodate the presentation */}
-            <div className={`video-grid ${screenShareParticipant ? 'has-share' : ''}`}>
-
-                {/* PRESENTATION SLOT: Appears only when someone is sharing */}
-                {screenShareParticipant && (
-                    <div className="video-tile screen-share-tile">
-                        <ParticipantView
-                            key={`${screenShareParticipant.userId}-screen`}
-                            participant={screenShareParticipant}
-                            trackType="screenShareTrack"
-                            ParticipantViewUI={null}  // removes the default overlay UI
-                            style={{ objectFit: 'contain' }}  // ← fix cropping
-                        />
-                        <div className="name-badge">PRESENTATION</div>
-                    </div>
-                )}
-
-                {/* STUDIO FEED SLOT */}
+            <div className="video-grid">
+                {/* STUDIO FEED */}
                 <div className="video-tile">
-                    {host ? (
-                        <ParticipantView
-                            key={`${host.userId}-video`}
-                            participant={host}
-                            trackType="videoTrack"
-                        />
-                    ) : (
-                        <div className="status">Waiting for Studio...</div>
-                    )}
+                    {host ? <ParticipantView participant={host} /> : <div className="status">Waiting for Studio...</div>}
                     <div className="name-badge">STUDIO ({roomid})</div>
                 </div>
 
-                {/* GUEST SELF-VIEW SLOT */}
+                {/* GUEST SELF-VIEW */}
                 <div className="video-tile">
                     {localParticipant ? (
-                        <ParticipantView
-                            key={`${localParticipant.userId}-video`}
-                            participant={localParticipant}
-                            trackType="videoTrack"
-                            mirror={true}
-                        />
+                        <ParticipantView participant={localParticipant} mirror={true} />
                     ) : (
                         <div className="status">Initializing Camera...</div>
                     )}
@@ -170,47 +184,22 @@ function MeetingUI({ roomid }) {
             </div>
 
             <div className="floating-controls">
-                <CallControls onLeave={() => setIsFinished(true)} />
+                <CallControls onLeave={async () => {
+                    console.log('dsdsd')
+                    // await call.leave();
+                    setIsFinished(true); // 👈 This triggers the Thank You screen
+                }} />
             </div>
 
-            <style jsx global>{`
-    .main-container { height: 100dvh; width: 100vw; background: #000; position: relative; overflow: hidden; }
-    
-    /* Default 2-column grid */
-    .video-grid { 
-        height: 100%; width: 100%; 
-        display: grid; 
-        grid-template-columns: 1fr 1fr; 
-        gap: 8px; padding: 8px; padding-bottom: 80px; 
-    }
-
-    /* ✅ This will now reach inside the SDK's video element */
-    .screen-share-tile video {
-        object-fit: contain !important;
-        background: #000;
-    }
-
-    /* 3-tile grid layout when sharing: 1 large on left, 2 small on right */
-    .video-grid.has-share {
-        grid-template-columns: 2.5fr 1fr;
-        grid-template-rows: 1fr 1fr;
-    }
-
-    .screen-share-tile {
-        grid-row: span 2;
-        border: 2px solid #3b82f6;
-    }
-
-    .video-tile { position: relative; background: #1a1a1a; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-    .name-badge { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.6); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; z-index: 5; }
-    .status { color: #555; font-family: sans-serif; }
-    .floating-controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 100; width: auto; display: flex; justify-content: center; background: rgba(0, 0, 0, 0.6); padding: 10px; border-radius: 30px; backdrop-filter: blur(4px); }
-    
-    @media (max-width: 768px) {
-        .video-grid.has-share { grid-template-columns: 1fr; grid-template-rows: 2fr 1fr 1fr; }
-        .screen-share-tile { grid-row: span 1; }
-    }
-`}</style>
+            <style jsx>{`
+        .main-container { height: 100dvh; width: 100vw; background: #000; position: relative; overflow: hidden; }
+        .video-grid { height: 100%; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px; padding-bottom: 80px; }
+        .video-tile { position: relative; background: #1a1a1a; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .name-badge { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.6); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; z-index: 5; }
+        .status { color: #555; font-family: sans-serif; }
+        .floating-controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 100; width: auto; display: flex; justify-content: center; background: rgba(0, 0, 0, 0.6); padding: 10px; border-radius: 30px; backdrop-filter: blur(4px); }
+        @media (max-width: 768px) and (orientation: portrait) { .video-grid { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; padding-bottom: 100px; } }
+      `}</style>
         </div>
     );
 }
