@@ -46,6 +46,10 @@ function ProgramPreviewGrid({ roomid }) {
 
   const getParticipant = (userId) => participants.find((p) => p.userId === userId);
 
+  const screenShareParticipant = participants.find((p) =>
+    p.publishedTracks.includes(SfuModels.TrackType.SCREEN_SHARE)
+  );
+
   return (
     <div style={{ display: 'flex', gap: '40px', marginTop: 30, borderTop: "1px solid #cbd5e1", paddingTop: 20, }}>
       <div>
@@ -59,7 +63,14 @@ function ProgramPreviewGrid({ roomid }) {
                 <div style={{ color: "#94a3b8", fontSize: 10, textAlign: "center", marginBottom: 4, fontWeight: 'bold' }}>{key.toUpperCase()}</div>
                 <div style={{ height: 100, background: "#050505", borderRadius: 4, overflow: "hidden1" }}>
                   {participant && (<>
-                    <ParticipantView mirror={false} participant={participant} muteAudio={true} drawParticipantInfo={false} style={{ width: "100%", height: "100%" }} />
+                    <ParticipantView
+                      mirror={false}
+                      participant={participant}
+                      trackType={screenShareParticipant ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
+
+                      muteAudio={true}
+                      drawParticipantInfo={false}
+                      style={{ width: "100%", height: "100%" }} />
                     <button style={{ color: 'black' }}
 
                       // Inside your ProgramPreviewGrid map
@@ -315,16 +326,6 @@ function HostInner({ roomid }) {
       <div className="gallery-grid">
 
 
-        {/* {screenShareParticipant && (
-          <div className="video-tile screen-share-tile">
-            <ParticipantView
-              key={`${screenShareParticipant.userId}-screen`}
-              participant={screenShareParticipant}
-              trackType="screenShareTrack"
-            />
-            <div className="name-badge">PRESENTATION</div>
-          </div>
-        )} */}
 
         {visibleCallers.map((caller, i) => {
           const isLive = Object.values(programs).includes(caller.userId);
