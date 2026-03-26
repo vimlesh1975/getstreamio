@@ -249,9 +249,10 @@ function MeetingUI({ roomid }) {
                             key={`${host.userId}-${screenShareParticipant?.userId === host.userId ? 'ss' : 'cam'}`}
                             participant={host}
                             trackType={screenShareParticipant?.userId === host.userId ? 'screenShareTrack' : 'videoTrack'}
+                            ParticipantViewUI={null}
                         />
                     ) : <div className="status">Waiting for Studio...</div>}
-                    <div className="name-badge">STUDIO</div>
+                    <div className="name-badge">{roomid} STUDIO</div>
                 </div>
 
                 {/* GUEST / SELF VIEW */}
@@ -262,6 +263,7 @@ function MeetingUI({ roomid }) {
                             participant={localParticipant}
                             trackType={screenShareParticipant?.userId === localParticipant.userId ? 'screenShareTrack' : 'videoTrack'}
                             mirror={screenShareParticipant?.userId !== localParticipant.userId}
+                            ParticipantViewUI={null}
                         />
                     ) : <div className="status">Joining...</div>}
                     <div className="name-badge">YOU (LIVE)</div>
@@ -273,25 +275,75 @@ function MeetingUI({ roomid }) {
             </div>
 
             <style jsx>{`
-            :global(.str-video__participant-details) {
-    background-color: rgba(0, 0, 0, 0.6) !important; /* Semi-transparent dark background */
-    border-radius: 4px !important;
-    padding: 2px 8px !important;
-}
+                /* Global SDK Overrides */
+                :global(.str-video__participant-details) { display: none !important; }
+                :global(.str-video__generic-menu) { color: #ffffff !important; }
+                
+                /* Layout Container */
+                .main-container { 
+                    height: 100dvh; 
+                    width: 100vw; 
+                    background: #000; 
+                    position: relative; 
+                    overflow: hidden; 
+                    display: flex;
+                    align-items: center;
+                }
 
-:global(.str-video__participant-details__name) {
-    color: #ffffff !important; /* Force text to White */
-}
-   :global(.str-video__generic-menu) {
-        color: #ffffff !important;
-    }
-                .main-container { height: 100dvh; width: 100vw; background: #000; position: relative; overflow: hidden; }
-                .video-grid { height: 100%; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px; padding-bottom: 80px; }
-                .video-tile { position: relative; background: #111; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-                .name-badge { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; z-index: 10; font-family: sans-serif; }
+                /* Fixed Horizontal Grid */
+                .video-grid { 
+                    width: 100%; 
+                    display: grid; 
+                    /* This ensures 2 columns even on the smallest phones */
+                    grid-template-columns: 1fr 1fr; 
+                    gap: 8px; 
+                    padding: 8px; 
+                    padding-bottom: 80px; 
+                }
+
+                .video-tile { 
+                    position: relative; 
+                    background: #111; 
+                    border-radius: 12px; 
+                    overflow: hidden; 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    /* Keeps a 16:9 or similar broadcast shape */
+                    aspect-ratio: 16 / 9; 
+                    border: 1px solid #222;
+                }
+
+                .name-badge { 
+                    position: absolute; 
+                    bottom: 10px; 
+                    left: 10px; 
+                    background: rgba(0,0,0,0.7); 
+                    color: white; 
+                    padding: 4px 10px; 
+                    border-radius: 6px; 
+                    font-size: 10px; 
+                    z-index: 10; 
+                    font-family: sans-serif;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+
                 .status { color: #444; font-size: 12px; }
-                .floating-controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 100; }
-                @media (max-width: 768px) { .video-grid { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; } }
+
+                .floating-controls { 
+                    position: absolute; 
+                    bottom: 20px; 
+                    left: 50%; 
+                    transform: translateX(-50%); 
+                    z-index: 100; 
+                }
+
+                /* Mobile Optimization: Adjust gap and padding only, keep columns at 2 */
+                @media (max-width: 768px) { 
+                    .video-grid { gap: 4px; padding: 4px; padding-bottom: 90px; } 
+                    .name-badge { font-size: 8px; padding: 2px 6px; bottom: 5px; left: 5px; }
+                }
             `}</style>
         </div>
     );
