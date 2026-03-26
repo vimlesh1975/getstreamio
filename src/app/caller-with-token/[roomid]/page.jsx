@@ -281,11 +281,10 @@ function MeetingUI({ roomid }) {
 
 :global(.str-video__participant-details__name) {
     color: #ffffff !important; /* Force text to White */
-    font-size: 12px !important;
-    font-weight: 600 !important;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important; /* Shadow for readability */
 }
-    
+   :global(.str-video__generic-menu) {
+        color: #ffffff !important;
+    }
                 .main-container { height: 100dvh; width: 100vw; background: #000; position: relative; overflow: hidden; }
                 .video-grid { height: 100%; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px; padding-bottom: 80px; }
                 .video-tile { position: relative; background: #111; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
