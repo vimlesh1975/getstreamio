@@ -1,0 +1,13 @@
+/* src/app/globals.css */
+
+/* Target the composite button specifically by its title attribute */
+.str-video__composite-button[title="Record call"],
+.str-video__composite-button[title="Stop recording"] {
+    display: none !important;
+}
+
+/* Fallback: Target by the test ID if the title changes in different SDK versions */
+[data-testid="recording-start-button"],
+[data-testid="recording-stop-button"] {
+    display: none !important;
+}
