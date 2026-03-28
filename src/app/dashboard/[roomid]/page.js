@@ -173,7 +173,7 @@ function HostInner({ roomid }) {
   const [showTokenGenerator, setShowTokenGenerator] = useState(false);
   const [muteAudio, setMuteAudio] = useState(true);
 
-
+  const [tally, setTally] = useState({ CH1: null, CH2: null, CH3: null, CH4: null });
 
   async function endCallForAll() {
     try {
@@ -411,10 +411,9 @@ function HostInner({ roomid }) {
         justifyContent: 'center',
         maxWidth: 600,
         marginTop: 25,
-        borderRadius: '16px' // Optional: smooths out the panel edges
+        borderRadius: '16px'
       }}>
         {[2, 3, 4].map((num) => {
-          // Determine route name once at the top of the map
           const route = num === 2 ? 'twoshot' : num === 3 ? 'threeshot' : 'fourshot';
 
           return (
@@ -428,33 +427,25 @@ function HostInner({ roomid }) {
               flexDirection: 'column',
               overflow: 'hidden'
             }}>
-              {/* Top Section: Local Window Preview */}
+              {/* Top Section: Local Preview */}
               <div style={{ flex: 1, display: 'flex' }}>
                 <button
                   onClick={() => {
                     const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
-                    window.open(
-                      `${window.location.origin}/${route}?out=${1}&room=${roomid}`,
-                      `shot_${num}`,
-                      features
-                    );
+                    window.open(`${window.location.origin}/${route}?out=1&room=${roomid}`, `shot_${num}`, features);
                   }}
-                  onMouseOver={(e) => e.currentTarget.style.background = '#334155'}
-                  onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
                   style={{
-                    width: '100%', // Changed to 100% for better click area
+                    width: '100%',
                     background: 'transparent',
                     border: 'none',
                     color: 'white',
                     fontWeight: '800',
-                    fontSize: '1.1rem',
                     cursor: 'pointer',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '8px',
-                    transition: 'background 0.2s'
+                    gap: '8px'
                   }}
                 >
                   <span style={{ fontSize: '1.5rem' }}>📺</span>
@@ -462,7 +453,7 @@ function HostInner({ roomid }) {
                 </button>
               </div>
 
-              {/* Bottom Section: CasparCG AMCP Trigger */}
+              {/* Bottom Section: CasparCG Channels with Tally */}
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(4, 1fr)',
@@ -470,42 +461,45 @@ function HostInner({ roomid }) {
                 background: '#000',
                 borderTop: '1px solid #334155'
               }}>
-                {['CH1', 'CH2', 'CH3', 'CH4'].map((label, i) => (
-                  <button
-                    key={label}
-                    onClick={() => {
-                      endpoint({
-                        action: "endpoint",
-                        command: `PLAY ${i + 1}-1 [HTML] "${window.location.origin}/${route}?out=${i + 1}&room=${roomid}"`,
-                      });
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.background = '#ef4444'; // Red for "On Air" feel
-                      e.currentTarget.style.color = '#fff';
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.background = '#0f172a';
-                      e.currentTarget.style.color = '#94a3b8';
-                    }}
-                    style={{
-                      background: '#0f172a',
-                      border: '1px solid #1e293b',
-                      color: '#94a3b8',
-                      fontSize: '9px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      transition: 'all 0.1s'
-                    }}
-                  >
-                    {label}
-                  </button>
-                ))}
+                {['CH1', 'CH2', 'CH3', 'CH4'].map((label, i) => {
+                  // Check if THIS specific button (Shot X on Channel Y) is the one currently Live
+                  const isLive = tally[label] === num;
+
+                  return (
+                    <button
+                      key={label}
+                      onClick={() => {
+                        // 1. Trigger CasparCG
+                        endpoint({
+                          action: "endpoint",
+                          command: `PLAY ${i + 1}-1 [HTML] "${window.location.origin}/${route}?out=${i + 1}&room=${roomid}"`,
+                        });
+                        // 2. Update Tally State
+                        setTally(prev => ({ ...prev, [label]: num }));
+                      }}
+                      style={{
+                        // Tally Logic: Red if Live, Dark if not
+                        background: isLive ? '#ef4444' : '#0f172a',
+                        border: isLive ? '1px solid #ff7878' : '1px solid #1e293b',
+                        color: isLive ? '#fff' : '#94a3b8',
+                        fontSize: '9px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        // Add a "Glow" effect for the Live button
+                        boxShadow: isLive ? 'inset 0 0 10px rgba(255,255,255,0.3)' : 'none'
+                      }}
+                    >
+                      {label}
+                      {isLive && <div style={{ fontSize: '6px', marginTop: '2px' }}>LIVE</div>}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           );
         })}
       </div>
-
 
       <style jsx>{`
         :global(body) {
