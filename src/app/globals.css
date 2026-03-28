@@ -11,3 +11,16 @@
 [data-testid="recording-stop-button"] {
     display: none !important;
 }
+
+/* Target the composite button that contains the reactions/emoji icon */
+.str-video__composite-button:has(.str-video__icon--reactions) {
+    display: none !important;
+}
+
+/* Fallback: If your environment doesn't support :has(), 
+   this targets the icon and its immediate button wrappers */
+.str-video__icon--reactions,
+.str-video__icon--reactions+button,
+button:has(.str-video__icon--reactions) {
+    display: none !important;
+}
