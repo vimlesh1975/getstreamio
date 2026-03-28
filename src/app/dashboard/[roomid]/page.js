@@ -36,13 +36,14 @@ const endpoint = async (str) => {
 /**
  * Previews for the 4 Program Channels
  */
-function ProgramPreviewGrid({ roomid }) {
+/**
+ * Previews for the 4 Program Channels
+ */
+function ProgramPreviewGrid({ roomid, tally, setTally }) { // 👈 Added tally props
   const { useParticipants, useCallCustomData } = useCallStateHooks();
   const participants = useParticipants();
   const custom = useCallCustomData();
   const programs = custom?.programs || {};
-
-
 
   const getParticipant = (userId) => participants.find((p) => p.userId === userId);
 
@@ -51,62 +52,102 @@ function ProgramPreviewGrid({ roomid }) {
   );
 
   return (
-    <div style={{ display: 'flex', gap: '40px', marginTop: 20, borderTop: "1px solid #cbd5e1", paddingTop: 20, }}>
+    <div style={{ display: 'flex', gap: '40px', marginTop: 20, borderTop: "1px solid #cbd5e1", paddingTop: 20 }}>
       <div>
         <h3 style={{ color: '#475569', fontSize: '0.9rem', marginBottom: 15 }}>🎬 Out Preview</h3>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", maxWidth: 850 }}>
           {["Out1", "Out2", "Out3", "Out4"].map((key, i) => {
             const userId = programs[key];
             const participant = getParticipant(userId);
+            const channelLabel = `CH${i + 1}`;
+
+            // Check if THIS channel is currently playing a "Program" (single user) 
+            // We use a special string like 'SINGLE' to distinguish from shots
+            const isLive = tally[channelLabel] === 'SINGLE_' + key;
+
             return (
-              <div key={key} style={{ width: 180, background: "#000", border: "2px solid #334155", padding: 4, borderRadius: 8 }}>
-                <div style={{ color: "#94a3b8", fontSize: 10, textAlign: "center", marginBottom: 4, fontWeight: 'bold' }}>{key.toUpperCase()}</div>
-                <div style={{ height: 100, background: "#050505", borderRadius: 4, overflow: "hidden1" }}>
-                  {participant && (<>
+              <div key={key} style={{
+                width: 180,
+                background: "#000",
+                border: isLive ? "2px solid #ef4444" : "2px solid #334155", // 👈 Tally Border
+                padding: 4,
+                borderRadius: 8,
+                transition: 'border 0.2s'
+              }}>
+                <div style={{
+                  color: isLive ? "#ef4444" : "#94a3b8",
+                  fontSize: 10,
+                  textAlign: "center",
+                  marginBottom: 4,
+                  fontWeight: 'bold'
+                }}>
+                  {key.toUpperCase()} {isLive ? "• LIVE" : ""}
+                </div>
+                <div style={{ height: 100, background: "#050505", borderRadius: 4, overflow: "hidden" }}>
+                  {participant && (
                     <ParticipantView
                       mirror={false}
                       participant={participant}
-                      trackType={(screenShareParticipant?.userId === participant.userId) ? 'screenShareTrack' : 'videoTrack'} // 👈 Forces the switch
-
+                      trackType={(screenShareParticipant?.userId === participant.userId) ? 'screenShareTrack' : 'videoTrack'}
                       muteAudio={true}
                       drawParticipantInfo={false}
-                      style={{ width: "100%", height: "100%" }} />
-                    <button style={{ color: 'black' }}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  )}
+                </div>
 
-                      // Inside your ProgramPreviewGrid map
-                      onClick={() => endpoint({
+                {/* BUTTONS SECTION */}
+                <div style={{ display: 'flex', gap: '2px', marginTop: '4px' }}>
+                  <button
+                    style={{
+                      flex: 1,
+                      fontSize: '9px',
+                      padding: '5px',
+                      cursor: 'pointer',
+                      background: isLive ? '#ef4444' : '#1e293b', // 👈 Tally Color
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      fontWeight: 'bold'
+                    }}
+                    onClick={() => {
+                      endpoint({
                         action: "endpoint",
-                        // 👈 Added &room=${roomid}
                         command: `play ${i + 1}-1 [html] ${window.location.origin}/program?out=${i + 1}&room=${roomid}`,
-                      })}
-                    >
-                      Caspar CH {i + 1}
-                    </button>
-                    <button
-                      onClick={() => {
-                        const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
-                        const windowName = `HDMI_${i + 1}`;
-                        window.open(
-                          `${window.location.origin}/program?out=${i + 1}&room=${roomid}`,
-                          windowName,
-                          features
-                        );
-                      }}
-                    >for HDMI</button>
-                  </>)
-                  }
+                      });
+                      // Update Tally to reflect a Single Program is live on this channel
+                      setTally(prev => ({ ...prev, [channelLabel]: 'SINGLE_' + key }));
+                    }}
+                  >
+                    CASPAR {i + 1}
+                  </button>
+
+                  <button
+                    style={{
+                      fontSize: '9px',
+                      padding: '5px',
+                      cursor: 'pointer',
+                      background: '#334155',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px'
+                    }}
+                    onClick={() => {
+                      const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
+                      window.open(`${window.location.origin}/program?out=${i + 1}&room=${roomid}`, `HDMI_${i + 1}`, features);
+                    }}
+                  >
+                    HDMI
+                  </button>
                 </div>
               </div>
             );
           })}
         </div>
       </div>
-
-
     </div>
   );
 }
-
 export default function HostPage({ params }) {
   const resolvedParams = use(params);
   const roomid = resolvedParams.roomid;
@@ -382,7 +423,11 @@ function HostInner({ roomid }) {
       </div>
       <div style={{ display: 'flex' }}>
         <div>
-          <ProgramPreviewGrid roomid={roomid} />
+          <ProgramPreviewGrid
+            roomid={roomid}
+            tally={tally}
+            setTally={setTally}
+          />
         </div>
         <div>
           <div>
