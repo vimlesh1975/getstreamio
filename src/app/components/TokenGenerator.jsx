@@ -74,14 +74,14 @@ export default function TokenGeneratorWithDuration({
                 Generate Token for {roomid.replace(/_/g, " ")}
             </h3>
 
-            <input
+            UserId  <input
                 value={userId}
                 onChange={(e) => setUserId(e.target.value)}
                 placeholder="caller-name"
-                style={{ width: "80%", padding: 10, marginBottom: 8, color: 'black' }}
+                style={{ width: "80%", padding: 10, marginBottom: 8, color: 'black', marginLeft: 16 }}
             />
 
-            <select
+            Duration <select
                 value={duration}
                 onChange={(e) => setDuration(Number(e.target.value))}
                 style={{
@@ -95,6 +95,7 @@ export default function TokenGeneratorWithDuration({
                 <option value={1}>1 minute</option>
                 <option value={10}>10 minutes</option>
                 <option value={60}>1 hour</option>
+                <option value={120}>2 hour</option>
                 <option value={300}>5 hours</option>
             </select>
 
@@ -130,7 +131,11 @@ export default function TokenGeneratorWithDuration({
                             border: '1px solid #555'
                         }}
                     />
-
+                    {expiresAt && (
+                        <div style={{ fontSize: 11, marginTop: 10, opacity: 0.8 }}>
+                            Link expires: {new Date(expiresAt * 1000).toLocaleTimeString()}
+                        </div>
+                    )}
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         <button type="button" onClick={copyUrl}>Copy URL</button>
                         <button type="button" onClick={() => {
@@ -154,11 +159,7 @@ export default function TokenGeneratorWithDuration({
                     <button className="download-btn" onClick={() => window.open("https://drive.google.com/drive/folders/1_ThcoK7xsQt67BeES4K8iBBipiRxoyec", "_blank")}>
                         download Casparcg Server
                     </button>
-                    {expiresAt && (
-                        <div style={{ fontSize: 11, marginTop: 10, opacity: 0.8 }}>
-                            Link expires: {new Date(expiresAt * 1000).toLocaleTimeString()}
-                        </div>
-                    )}
+
                 </>
             )}
 

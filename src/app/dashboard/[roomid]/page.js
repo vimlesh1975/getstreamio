@@ -80,7 +80,7 @@ function ProgramPreviewGrid({ roomid }) {
                         command: `play ${i + 1}-1 [html] ${window.location.origin}/program?out=${i + 1}&room=${roomid}`,
                       })}
                     >
-                      Initialise CH {i + 1}
+                      Caspar CH {i + 1}
                     </button>
                     <button
                       onClick={() => {
@@ -249,17 +249,16 @@ function HostInner({ roomid }) {
     return (
       <div className="onboarding-screen">
         <div className="glass-panel">
-          <h1>🎙️ Studio Monitor</h1>
-          <p style={{ color: '#94a3b8' }}>Ready to manage the broadcast gallery?</p>
+          <h1>GetStream Dashborad</h1>
           <button onClick={() => {
             window.open("/decklink-init.html", "_blank")
-          }}>Open decklink selector</button>
+          }}>Open Decklink Selector</button>
           <button
             className="start-btn"
             disabled={!hasCaller}
             onClick={() => setAccepted(true)}
           >
-            {hasCaller ? "LAUNCH CONTROL ROOM" : "WAITING FOR SIGNAL..."}
+            {hasCaller ? "Open Dasboard" : "WAITING FOR SIGNAL..."}
           </button>
         </div>
       </div>
@@ -269,9 +268,8 @@ function HostInner({ roomid }) {
   return (
     <div className="dashboard-container">
       <div style={{ marginBottom: 20, borderBottom: '1px solid #ddd', pb: 10 }}>
-        <h2 style={{ margin: 0 }}>📍 STUDIO: {roomid?.replace(/_/g, " ")}</h2>
+        <h2 style={{ margin: 0 }}>STUDIO: {roomid?.replace(/_/g, " ")}</h2>
       </div>
-      <span style={{ color: '#64748b' }}>DD Caller</span>  CONNECTED SOURCES: {visibleCallers.length}
       <button
         style={{
           background: "#0023a1",

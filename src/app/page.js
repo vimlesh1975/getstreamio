@@ -57,9 +57,7 @@ export default function Login() {
 
       <div className="glass-card">
         <header className="card-header">
-          <div className="live-badge">SYSTEM STANDBY</div>
-          <h1>BROADCAST PORTAL</h1>
-          <p>Select Station & Enter Authorization Code</p>
+          <h1>GetStream</h1>
         </header>
 
         {loading && rooms.length === 0 ? (
@@ -67,7 +65,7 @@ export default function Login() {
         ) : (
           <form onSubmit={handleLogin} className="login-form">
             <div className="input-group">
-              <label>CONTROL STATION</label>
+              <label>User</label>
               <select
                 className="styled-select"
                 value={username}
@@ -82,7 +80,7 @@ export default function Login() {
             </div>
 
             <div className="input-group">
-              <label>MASTER ACCESS CODE</label>
+              <label>Pasword</label>
               <input
                 className="styled-input"
                 type="password"
@@ -99,15 +97,12 @@ export default function Login() {
               {loading ? (
                 <span className="pulse">VERIFYING...</span>
               ) : (
-                `INITIALIZE ${username.replace(/_/g, " ").toUpperCase()}`
+                `Submit`
               )}
             </button>
           </form>
         )}
 
-        <footer className="card-footer">
-          SECURE ENCRYPTED CHANNEL 256-BIT
-        </footer>
       </div>
 
       <style jsx>{`
