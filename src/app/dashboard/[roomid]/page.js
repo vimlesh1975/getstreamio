@@ -464,7 +464,7 @@ function HostInner({ roomid }) {
               background: '#000',
               borderTop: '1px solid #334155'
             }}>
-              {['OUT1', 'OUT2', 'OUT3', 'OUT4'].map((label, i) => (
+              {['CH1', 'CH2', 'CH3', 'CH4'].map((label, i) => (
                 <button
                   key={label}
                   onClick={() => {
