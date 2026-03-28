@@ -410,96 +410,100 @@ function HostInner({ roomid }) {
         background: '#0f172a',
         justifyContent: 'center',
         maxWidth: 600,
-        marginTop: 25
+        marginTop: 25,
+        borderRadius: '16px' // Optional: smooths out the panel edges
       }}>
-        {[2, 3, 4].map((num) => (
-          <div key={num} style={{
-            width: '180px',
-            height: '180px',
-            background: '#1e293b',
-            border: '1px solid #334155',
-            borderRadius: '12px',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden'
-          }}>
-            {/* Top Section: Main Window Opener */}
-            <div style={{ flex: 1, display: 'flex' }}>
-              <button
-                onClick={() => {
-                  const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
-                  const windowName = `shot_${num}`;
-                  const route = num === 2 ? 'twoshot' : num === 3 ? 'threeshot' : 'fourshot';
-                  window.open(
-                    `${window.location.origin}/${route}?out=${1}&room=${roomid}`,
-                    windowName,
-                    features
-                  );
-                }}
-                style={{
-                  width: '50%',
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'white',
-                  fontWeight: '800',
-                  fontSize: '1.1rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px'
-                }}
-              >
-                <span style={{ fontSize: '1.5rem' }}>📺</span>
-                {num} SHOT
-              </button>
-            </div>
+        {[2, 3, 4].map((num) => {
+          // Determine route name once at the top of the map
+          const route = num === 2 ? 'twoshot' : num === 3 ? 'threeshot' : 'fourshot';
 
-            {/* Bottom Section: CasparCG Output Controls */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              height: '45px',
-              background: '#000',
-              borderTop: '1px solid #334155'
+          return (
+            <div key={num} style={{
+              width: '180px',
+              height: '180px',
+              background: '#1e293b',
+              border: '1px solid #334155',
+              borderRadius: '12px',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden'
             }}>
-              {['CH1', 'CH2', 'CH3', 'CH4'].map((label, i) => (
+              {/* Top Section: Local Window Preview */}
+              <div style={{ flex: 1, display: 'flex' }}>
                 <button
-                  key={label}
                   onClick={() => {
-                    var aa = '';
-                    if (num === 2) {
-                      aa = 'twoshot';
-                    }
-                    if (num === 3) {
-                      aa = 'threeshot';
-                    }
-                    if (num === 4) {
-                      aa = 'fourshot';
-                    }
-                    endpoint({
-                      action: "endpoint",
-                      // 👈 Added &room=${roomid}
-                      command: `play ${i + 1}-1 [html] ${window.location.origin}/${aa}?out=${i + 1}&room=${roomid}`,
-
-                    })
+                    const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
+                    window.open(
+                      `${window.location.origin}/${route}?out=${1}&room=${roomid}`,
+                      `shot_${num}`,
+                      features
+                    );
                   }}
+                  onMouseOver={(e) => e.currentTarget.style.background = '#334155'}
+                  onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
                   style={{
-                    background: '#0f172a',
-                    border: '1px solid #1e293b',
-                    color: '#94a3b8',
-                    fontSize: '9px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer'
+                    width: '100%', // Changed to 100% for better click area
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'white',
+                    fontWeight: '800',
+                    fontSize: '1.1rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    transition: 'background 0.2s'
                   }}
                 >
-                  {label}
+                  <span style={{ fontSize: '1.5rem' }}>📺</span>
+                  {num} SHOT
                 </button>
-              ))}
+              </div>
+
+              {/* Bottom Section: CasparCG AMCP Trigger */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                height: '45px',
+                background: '#000',
+                borderTop: '1px solid #334155'
+              }}>
+                {['CH1', 'CH2', 'CH3', 'CH4'].map((label, i) => (
+                  <button
+                    key={label}
+                    onClick={() => {
+                      endpoint({
+                        action: "endpoint",
+                        command: `PLAY ${i + 1}-1 [HTML] "${window.location.origin}/${route}?out=${i + 1}&room=${roomid}"`,
+                      });
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.background = '#ef4444'; // Red for "On Air" feel
+                      e.currentTarget.style.color = '#fff';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.background = '#0f172a';
+                      e.currentTarget.style.color = '#94a3b8';
+                    }}
+                    style={{
+                      background: '#0f172a',
+                      border: '1px solid #1e293b',
+                      color: '#94a3b8',
+                      fontSize: '9px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      transition: 'all 0.1s'
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
 
