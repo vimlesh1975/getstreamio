@@ -51,7 +51,7 @@ function ProgramPreviewGrid({ roomid }) {
   );
 
   return (
-    <div style={{ display: 'flex', gap: '40px', marginTop: 30, borderTop: "1px solid #cbd5e1", paddingTop: 20, }}>
+    <div style={{ display: 'flex', gap: '40px', marginTop: 20, borderTop: "1px solid #cbd5e1", paddingTop: 20, }}>
       <div>
         <h3 style={{ color: '#475569', fontSize: '0.9rem', marginBottom: 15 }}>🎬 Out Preview</h3>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", maxWidth: 850 }}>
@@ -401,42 +401,107 @@ function HostInner({ roomid }) {
 
         </div>
       </div>
-      <div style={{ marginTop: 50 }}>
-        <button
-          onClick={() => {
-            const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
-            const windowName = `shot_2`;
-            window.open(
-              `${window.location.origin}/twoshot?out=${1}&room=${roomid}`,
-              windowName,
-              features
-            );
-          }}
-        >2 Shot</button>
-        <button
-          onClick={() => {
-            const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
-            const windowName = `shot_3`;
-            window.open(
-              `${window.location.origin}/threeshot?out=${1}&room=${roomid}`,
-              windowName,
-              features
-            );
-          }}
-        >3 Shot</button>
-        <button
-          onClick={() => {
-            const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
-            const windowName = `shot_4`;
-            window.open(
-              `${window.location.origin}/fourshot?out=${1}&room=${roomid}`,
-              windowName,
-              features
-            );
-          }}
-        >4 Shot</button>
 
+
+      <div style={{
+        display: 'flex',
+        gap: '20px',
+        padding: '20px',
+        background: '#0f172a',
+        justifyContent: 'center',
+        maxWidth: 600,
+        marginTop: 25
+      }}>
+        {[2, 3, 4].map((num) => (
+          <div key={num} style={{
+            width: '180px',
+            height: '180px',
+            background: '#1e293b',
+            border: '1px solid #334155',
+            borderRadius: '12px',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+          }}>
+            {/* Top Section: Main Window Opener */}
+            <div style={{ flex: 1, display: 'flex' }}>
+              <button
+                onClick={() => {
+                  const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
+                  const windowName = `shot_${num}`;
+                  const route = num === 2 ? 'twoshot' : num === 3 ? 'threeshot' : 'fourshot';
+                  window.open(
+                    `${window.location.origin}/${route}?out=${1}&room=${roomid}`,
+                    windowName,
+                    features
+                  );
+                }}
+                style={{
+                  width: '50%',
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'white',
+                  fontWeight: '800',
+                  fontSize: '1.1rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                <span style={{ fontSize: '1.5rem' }}>📺</span>
+                {num} SHOT
+              </button>
+            </div>
+
+            {/* Bottom Section: CasparCG Output Controls */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              height: '45px',
+              background: '#000',
+              borderTop: '1px solid #334155'
+            }}>
+              {['OUT1', 'OUT2', 'OUT3', 'OUT4'].map((label, i) => (
+                <button
+                  key={label}
+                  onClick={() => {
+                    var aa = '';
+                    if (num === 2) {
+                      aa = 'twoshot';
+                    }
+                    if (num === 3) {
+                      aa = 'threeshot';
+                    }
+                    if (num === 4) {
+                      aa = 'fourshot';
+                    }
+                    endpoint({
+                      action: "endpoint",
+                      // 👈 Added &room=${roomid}
+                      command: `play ${i + 1}-1 [html] ${window.location.origin}/${aa}?out=${i + 1}&room=${roomid}`,
+
+                    })
+                  }}
+                  style={{
+                    background: '#0f172a',
+                    border: '1px solid #1e293b',
+                    color: '#94a3b8',
+                    fontSize: '9px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
+
 
       <style jsx>{`
         :global(body) {
