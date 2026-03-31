@@ -83,7 +83,15 @@ function ProgramPreviewGrid({ roomid, tally, setTally }) { // 👈 Added tally p
                 }}>
                   {key.toUpperCase()} {isLive ? "• LIVE" : ""}
                 </div>
-                <div style={{ height: 100, background: "#050505", borderRadius: 4, overflow: "hidden" }}>
+                <div
+                  style={{ height: 100, background: "#050505", borderRadius: 4, overflow: "hidden" }}
+
+                  onClick={() => {
+                    const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
+                    window.open(`${window.location.origin}/program?out=${i + 1}&room=${roomid}`, `HDMI_${i + 1}`, features);
+                  }}
+
+                >
                   {participant && (
                     <ParticipantView
                       mirror={false}
@@ -122,23 +130,7 @@ function ProgramPreviewGrid({ roomid, tally, setTally }) { // 👈 Added tally p
                     CASPAR {i + 1}
                   </button>
 
-                  <button
-                    style={{
-                      fontSize: '9px',
-                      padding: '5px',
-                      cursor: 'pointer',
-                      background: '#334155',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px'
-                    }}
-                    onClick={() => {
-                      const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
-                      window.open(`${window.location.origin}/program?out=${i + 1}&room=${roomid}`, `HDMI_${i + 1}`, features);
-                    }}
-                  >
-                    HDMI
-                  </button>
+
                 </div>
               </div>
             );
