@@ -602,7 +602,7 @@ function HostInner({ roomid }) {
                 {["Out1", "Out2", "Out3", "Out4"].map((p) => (
                   <button
                     key={p}
-                    onClick={() => setLive(p, caller.userId)}
+                    onClick={() => setLive(p, programs[p] === caller.userId ? null : caller.userId)}
                     className={`take-button ${programs[p] === caller.userId ? 'active' : ''}`}
                   >
                     OUT {p.slice(-1)}
