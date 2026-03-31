@@ -178,12 +178,23 @@ function OutPreviewGrid({ roomid, tally, setTally }) {
               >
                 <div
                   style={{
+                    color: 'white',
+                    fontSize: '11px',
+                    fontWeight: '800',
+                    letterSpacing: '0.5px',
+                    padding: '10px 8px 6px',
+                    textAlign: 'center'
+                  }}
+                >
+                  {key.toUpperCase()}
+                </div>
+                <div
+                  style={{
                     flex: 1,
                     background: '#050505',
-                    margin: '8px',
+                    margin: '0 8px 8px',
                     borderRadius: '8px',
                     overflow: 'hidden',
-                    position: 'relative',
                     cursor: 'pointer'
                   }}
                   onClick={() => {
@@ -191,23 +202,6 @@ function OutPreviewGrid({ roomid, tally, setTally }) {
                     window.open(`${window.location.origin}/program?out=${i + 1}&room=${roomid}`, `HDMI_${i + 1}`, features);
                   }}
                 >
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: 8,
-                      left: 8,
-                      zIndex: 2,
-                      color: 'white',
-                      fontSize: '11px',
-                      fontWeight: '800',
-                      letterSpacing: '0.5px',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      padding: '4px 8px',
-                      borderRadius: '999px'
-                    }}
-                  >
-                    {key.toUpperCase()}
-                  </div>
                   {participant && (
                     <ParticipantView
                       mirror={false}
@@ -671,8 +665,18 @@ function HostInner({ roomid }) {
               flexDirection: 'column',
               overflow: 'hidden'
             }}>
+              <div style={{
+                color: 'white',
+                fontSize: '11px',
+                fontWeight: '800',
+                letterSpacing: '0.5px',
+                padding: '10px 8px 6px',
+                textAlign: 'center'
+              }}>
+                {num} SHOT
+              </div>
               {/* Top Section: Local Preview */}
-              <div style={{ flex: 1, display: 'flex' }}>
+              <div style={{ flex: 1, display: 'flex', padding: '0 8px 8px' }}>
                 <button
                   onClick={() => {
                     const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
@@ -695,32 +699,12 @@ function HostInner({ roomid }) {
                     lineHeight: 0
                   }}
                 >
-                  <span style={{ fontSize: '1.5rem' }}>📺</span>
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: 8,
-                      left: 8,
-                      zIndex: 2,
-                      color: 'white',
-                      fontSize: '11px',
-                      fontWeight: '800',
-                      letterSpacing: '0.5px',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      padding: '4px 8px',
-                      borderRadius: '999px',
-                      lineHeight: 1.2
-                    }}
-                  >
-                    {num} SHOT
-                  </div>
                   <ShotPreviewContent
                     shotCount={num}
                     participants={participants}
                     programs={programs}
                     screenShareParticipant={screenShareParticipant}
                   />
-                  {num} SHOT
                 </button>
               </div>
 
@@ -1049,3 +1033,4 @@ color: white !important;}
     </div>
   );
 }
+
