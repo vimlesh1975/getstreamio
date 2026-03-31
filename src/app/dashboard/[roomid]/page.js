@@ -267,6 +267,86 @@ function OutPreviewGrid({ roomid, tally, setTally }) {
     </div>
   );
 }
+
+function ShotPreviewContent({ shotCount, participants, programs, screenShareParticipant }) {
+  const liveCallers = Array.from({ length: shotCount }, (_, index) => {
+    const key = `Out${index + 1}`;
+    const userId = programs[key];
+    return participants.find((participant) => participant.userId === userId) || null;
+  });
+
+  const activeCount = liveCallers.filter(Boolean).length;
+
+  if (activeCount === 0) {
+    return (
+      <div style={{
+        width: '100%',
+        height: '100%',
+        display: 'grid',
+        placeItems: 'center',
+        color: '#94a3b8',
+        fontSize: '12px',
+        fontWeight: '700',
+        letterSpacing: '0.5px'
+      }}>
+        {shotCount} SHOT
+      </div>
+    );
+  }
+
+  const containerStyle = shotCount === 4
+    ? {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gridTemplateRows: '1fr 1fr',
+      width: '100%',
+      height: '100%',
+      gap: '2px' // Small gap for broadcast look, or '0' for seamless
+    }
+    : {
+      display: 'grid',
+      gridTemplateColumns: `repeat(${shotCount}, 1fr)`,
+      width: '100%',
+      height: '100%',
+      gap: '2px'
+    };
+
+  return (
+    <div
+      className={`shot-preview-grid shot-preview-grid-${shotCount}`}
+      style={{
+        ...containerStyle,
+        height: '100%',
+        alignSelf: 'start'
+      }}
+    >
+      {liveCallers.map((caller, index) => (
+        <div
+          key={`shot-${shotCount}-${index}`}
+          className="shot-preview-tile"
+          style={{
+            position: 'relative',
+            overflow: 'hidden',
+            borderRight: shotCount !== 4 && index < shotCount - 1 ? '1px solid #000' : 'none',
+            borderBottom: shotCount === 4 && index < 2 ? '1px solid #000' : 'none'
+          }}
+        >
+          {caller ? (
+            <ParticipantView
+              participant={caller}
+              trackType={(screenShareParticipant?.userId === caller.userId) ? 'screenShareTrack' : 'videoTrack'}
+              drawParticipantInfo={false}
+              muteAudio={true}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            <div style={{ width: '100%', height: '100%', background: '#020617' }} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 export default function HostPage({ params }) {
   const resolvedParams = use(params);
   const roomid = resolvedParams.roomid;
@@ -600,19 +680,46 @@ function HostInner({ roomid }) {
                   }}
                   style={{
                     width: '100%',
-                    background: 'transparent',
+                    height: '100%',
+                    background: '#050505',
                     border: 'none',
-                    color: 'white',
+                    color: 'transparent',
                     fontWeight: '800',
                     cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px'
+                    display: 'block',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    borderRadius: '8px',
+                    padding: 0,
+                    fontSize: 0,
+                    lineHeight: 0
                   }}
                 >
                   <span style={{ fontSize: '1.5rem' }}>📺</span>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 8,
+                      left: 8,
+                      zIndex: 2,
+                      color: 'white',
+                      fontSize: '11px',
+                      fontWeight: '800',
+                      letterSpacing: '0.5px',
+                      background: 'rgba(15, 23, 42, 0.8)',
+                      padding: '4px 8px',
+                      borderRadius: '999px',
+                      lineHeight: 1.2
+                    }}
+                  >
+                    {num} SHOT
+                  </div>
+                  <ShotPreviewContent
+                    shotCount={num}
+                    participants={participants}
+                    programs={programs}
+                    screenShareParticipant={screenShareParticipant}
+                  />
                   {num} SHOT
                 </button>
               </div>
@@ -681,6 +788,30 @@ function HostInner({ roomid }) {
   border: 1px solid rgba(255,255,255,0.1) !important;
 }
 
+/* Ensure the participant view container fills the 2/3/4 shot tiles */
+:global(.shot-preview-tile .str-video__participant-view),
+:global(.shot-preview-tile .str-video__video-container) {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+}
+
+/* Force the video element itself to fill the area without black bars */
+:global(.shot-preview-tile video) {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important; /* This is what removes the black bars */
+  object-position: center !important;
+}
+
+/* Fix for 3-Shot specifically to ensure they are equal widths */
+.shot-preview-grid-3 {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
 /* 2. Target labels, buttons, and icons inside the menu */
 :global(.str-video__menu-item),
 :global(.str-video__generic-menu__item),
@@ -714,6 +845,22 @@ function HostInner({ roomid }) {
 
 :global(.str-video__screen-share-overlay__title){
 color: white !important;}
+}
+
+:global(.shot-preview-tile .str-video__participant-view),
+:global(.shot-preview-tile .str-video__video-container),
+:global(.shot-preview-tile .str-video__participant-view__video),
+:global(.shot-preview-tile .str-video__video) {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+:global(.shot-preview-tile video) {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+  transform: scaleX(1) !important;
 }
     
 .dashboard-container {
