@@ -66,11 +66,12 @@ export default function CallerWithTokenPage({ params }) {
 
                 const activeCall = streamClient.call("default", roomid);
 
-                // ✅ Fix: Only set the state if we successfully join
+                // Inside your init function
                 await Promise.race([
                     activeCall.join({ create: true, video: true, audio: true }),
                     new Promise((_, reject) =>
-                        setTimeout(() => reject(new Error("Connection Timeout")), 8000) // Bumped to 8s
+                        // Increased to 60 seconds for very slow mobile data
+                        setTimeout(() => reject(new Error("TIMEOUT")), 120000)
                     )
                 ]);
 
@@ -145,13 +146,43 @@ export default function CallerWithTokenPage({ params }) {
         return (
             <div className="loading-screen">
                 <div className="spinner"></div>
-                <p>Authenticating with Studio...</p>
+                <div className="loading-text-area">
+                    <p>Connecting to Broadcast Studio...</p>
+                    <span className="network-note">
+                        Slow connection detected. Please stay on this screen.
+                    </span>
+                </div>
                 <style jsx>{`
-                    .loading-screen { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; color: white; font-family: sans-serif; }
-                    .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
-                    @keyframes spin { to { transform: rotate(360deg); } }
-                    p { color: #64748b; font-size: 14px; letter-spacing: 0.5px; }
-                `}</style>
+                .loading-screen { 
+                    height: 100vh; 
+                    display: flex; 
+                    flex-direction: column; 
+                    align-items: center; 
+                    justify-content: center; 
+                    background: #000; 
+                    color: white; 
+                    font-family: sans-serif; 
+                }
+                .spinner { 
+                    width: 50px; 
+                    height: 50px; 
+                    border: 3px solid rgba(255,255,255,0.1); 
+                    border-top-color: #3b82f6; 
+                    border-radius: 50%; 
+                    animation: spin 1s linear infinite; 
+                    margin-bottom: 25px; 
+                }
+                .loading-text-area { text-align: center; }
+                p { color: white; font-size: 16px; margin: 0; }
+                .network-note { 
+                    color: #64748b; 
+                    font-size: 12px; 
+                    display: block; 
+                    margin-top: 10px; 
+                    font-style: italic;
+                }
+                @keyframes spin { to { transform: rotate(360deg); } }
+            `}</style>
             </div>
         );
     }
