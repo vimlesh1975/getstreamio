@@ -83,7 +83,15 @@ function ProgramPreviewGrid({ roomid, tally, setTally }) { // 👈 Added tally p
                 }}>
                   {key.toUpperCase()} {isLive ? "• LIVE" : ""}
                 </div>
-                <div style={{ height: 100, background: "#050505", borderRadius: 4, overflow: "hidden" }}>
+                <div
+                  style={{ height: 100, background: "#050505", borderRadius: 4, overflow: "hidden" }}
+
+                  onClick={() => {
+                    const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
+                    window.open(`${window.location.origin}/program?out=${i + 1}&room=${roomid}`, `HDMI_${i + 1}`, features);
+                  }}
+
+                >
                   {participant && (
                     <ParticipantView
                       mirror={false}
@@ -122,29 +130,214 @@ function ProgramPreviewGrid({ roomid, tally, setTally }) { // 👈 Added tally p
                     CASPAR {i + 1}
                   </button>
 
-                  <button
-                    style={{
-                      fontSize: '9px',
-                      padding: '5px',
-                      cursor: 'pointer',
-                      background: '#334155',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px'
-                    }}
-                    onClick={() => {
-                      const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
-                      window.open(`${window.location.origin}/program?out=${i + 1}&room=${roomid}`, `HDMI_${i + 1}`, features);
-                    }}
-                  >
-                    HDMI
-                  </button>
+
                 </div>
               </div>
             );
           })}
         </div>
       </div>
+    </div>
+  );
+}
+function OutPreviewGrid({ roomid, tally, setTally }) {
+  const { useParticipants, useCallCustomData } = useCallStateHooks();
+  const participants = useParticipants();
+  const custom = useCallCustomData();
+  const programs = custom?.programs || {};
+
+  const getParticipant = (userId) => participants.find((p) => p.userId === userId);
+
+  const screenShareParticipant = participants.find((p) =>
+    p.publishedTracks.includes(SfuModels.TrackType.SCREEN_SHARE)
+  );
+
+  return (
+    <div style={{ display: 'flex', gap: '40px', marginTop: 20, borderTop: "1px solid #cbd5e1", paddingTop: 20 }}>
+      <div>
+        <h3 style={{ color: '#475569', fontSize: '0.9rem', marginBottom: 15 }}>Out Preview</h3>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", maxWidth: 850 }}>
+          {["Out1", "Out2", "Out3", "Out4"].map((key, i) => {
+            const userId = programs[key];
+            const participant = getParticipant(userId);
+            const isLive = Object.values(tally).includes(`SINGLE_${key}`);
+
+            return (
+              <div
+                key={key}
+                style={{
+                  width: '180px',
+                  height: '180px',
+                  background: '#1e293b',
+                  border: isLive ? '2px solid #ef4444' : '1px solid #334155',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflow: 'hidden'
+                }}
+              >
+                <div
+                  style={{
+                    color: 'white',
+                    fontSize: '11px',
+                    fontWeight: '800',
+                    letterSpacing: '0.5px',
+                    padding: '10px 8px 6px',
+                    textAlign: 'center'
+                  }}
+                >
+                  {key.toUpperCase()}
+                </div>
+                <div
+                  style={{
+                    flex: 1,
+                    background: '#050505',
+                    margin: '0 8px 8px',
+                    borderRadius: '8px',
+                    overflow: 'hidden',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => {
+                    const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
+                    window.open(`${window.location.origin}/program?out=${i + 1}&room=${roomid}`, `HDMI_${i + 1}`, features);
+                  }}
+                >
+                  {participant && (
+                    <ParticipantView
+                      mirror={false}
+                      participant={participant}
+                      trackType={(screenShareParticipant?.userId === participant.userId) ? 'screenShareTrack' : 'videoTrack'}
+                      muteAudio={true}
+                      drawParticipantInfo={false}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  )}
+                </div>
+
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(4, 1fr)',
+                    height: '45px',
+                    background: '#000',
+                    borderTop: '1px solid #334155'
+                  }}
+                >
+                  {['CH1', 'CH2', 'CH3', 'CH4'].map((label, channelIndex) => {
+                    const isChannelLive = tally[label] === `SINGLE_${key}`;
+
+                    return (
+                      <button
+                        key={label}
+                        onClick={() => {
+                          endpoint({
+                            action: "endpoint",
+                            command: `PLAY ${channelIndex + 1}-1 [HTML] "${window.location.origin}/program?out=${i + 1}&room=${roomid}"`,
+                          });
+                          setTally((prev) => ({ ...prev, [label]: `SINGLE_${key}` }));
+                        }}
+                        style={{
+                          background: isChannelLive ? '#ef4444' : '#0f172a',
+                          border: isChannelLive ? '1px solid #ff7878' : '1px solid #1e293b',
+                          color: isChannelLive ? '#fff' : '#94a3b8',
+                          fontSize: '9px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          boxShadow: isChannelLive ? 'inset 0 0 10px rgba(255,255,255,0.3)' : 'none'
+                        }}
+                      >
+                        {label}
+                        {isChannelLive && <div style={{ fontSize: '6px', marginTop: '2px' }}>LIVE</div>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ShotPreviewContent({ shotCount, participants, programs, screenShareParticipant }) {
+  const liveCallers = Array.from({ length: shotCount }, (_, index) => {
+    const key = `Out${index + 1}`;
+    const userId = programs[key];
+    return participants.find((participant) => participant.userId === userId) || null;
+  });
+
+  const activeCount = liveCallers.filter(Boolean).length;
+
+  if (activeCount === 0) {
+    return (
+      <div style={{
+        width: '100%',
+        height: '100%',
+        display: 'grid',
+        placeItems: 'center',
+        color: '#94a3b8',
+        fontSize: '12px',
+        fontWeight: '700',
+        letterSpacing: '0.5px'
+      }}>
+        {shotCount} SHOT
+      </div>
+    );
+  }
+
+  const containerStyle = shotCount === 4
+    ? {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gridTemplateRows: '1fr 1fr',
+      width: '100%',
+      height: '100%',
+      gap: '2px' // Small gap for broadcast look, or '0' for seamless
+    }
+    : {
+      display: 'grid',
+      gridTemplateColumns: `repeat(${shotCount}, 1fr)`,
+      width: '100%',
+      height: '100%',
+      gap: '2px'
+    };
+
+  return (
+    <div
+      className={`shot-preview-grid shot-preview-grid-${shotCount}`}
+      style={{
+        ...containerStyle,
+        height: '100%',
+        alignSelf: 'start'
+      }}
+    >
+      {liveCallers.map((caller, index) => (
+        <div
+          key={`shot-${shotCount}-${index}`}
+          className="shot-preview-tile"
+          style={{
+            position: 'relative',
+            overflow: 'hidden',
+            borderRight: shotCount !== 4 && index < shotCount - 1 ? '1px solid #000' : 'none',
+            borderBottom: shotCount === 4 && index < 2 ? '1px solid #000' : 'none'
+          }}
+        >
+          {caller ? (
+            <ParticipantView
+              participant={caller}
+              trackType={(screenShareParticipant?.userId === caller.userId) ? 'screenShareTrack' : 'videoTrack'}
+              drawParticipantInfo={false}
+              muteAudio={true}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            <div style={{ width: '100%', height: '100%', background: '#020617' }} />
+          )}
+        </div>
+      ))}
     </div>
   );
 }
@@ -409,7 +602,7 @@ function HostInner({ roomid }) {
                 {["Out1", "Out2", "Out3", "Out4"].map((p) => (
                   <button
                     key={p}
-                    onClick={() => setLive(p, caller.userId)}
+                    onClick={() => setLive(p, programs[p] === caller.userId ? null : caller.userId)}
                     className={`take-button ${programs[p] === caller.userId ? 'active' : ''}`}
                   >
                     OUT {p.slice(-1)}
@@ -423,7 +616,7 @@ function HostInner({ roomid }) {
       </div>
       <div style={{ display: 'flex' }}>
         <div>
-          <ProgramPreviewGrid
+          <OutPreviewGrid
             roomid={roomid}
             tally={tally}
             setTally={setTally}
@@ -472,8 +665,18 @@ function HostInner({ roomid }) {
               flexDirection: 'column',
               overflow: 'hidden'
             }}>
+              <div style={{
+                color: 'white',
+                fontSize: '11px',
+                fontWeight: '800',
+                letterSpacing: '0.5px',
+                padding: '10px 8px 6px',
+                textAlign: 'center'
+              }}>
+                {num} SHOT
+              </div>
               {/* Top Section: Local Preview */}
-              <div style={{ flex: 1, display: 'flex' }}>
+              <div style={{ flex: 1, display: 'flex', padding: '0 8px 8px' }}>
                 <button
                   onClick={() => {
                     const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
@@ -481,20 +684,27 @@ function HostInner({ roomid }) {
                   }}
                   style={{
                     width: '100%',
-                    background: 'transparent',
+                    height: '100%',
+                    background: '#050505',
                     border: 'none',
-                    color: 'white',
+                    color: 'transparent',
                     fontWeight: '800',
                     cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px'
+                    display: 'block',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    borderRadius: '8px',
+                    padding: 0,
+                    fontSize: 0,
+                    lineHeight: 0
                   }}
                 >
-                  <span style={{ fontSize: '1.5rem' }}>📺</span>
-                  {num} SHOT
+                  <ShotPreviewContent
+                    shotCount={num}
+                    participants={participants}
+                    programs={programs}
+                    screenShareParticipant={screenShareParticipant}
+                  />
                 </button>
               </div>
 
@@ -562,6 +772,30 @@ function HostInner({ roomid }) {
   border: 1px solid rgba(255,255,255,0.1) !important;
 }
 
+/* Ensure the participant view container fills the 2/3/4 shot tiles */
+:global(.shot-preview-tile .str-video__participant-view),
+:global(.shot-preview-tile .str-video__video-container) {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+}
+
+/* Force the video element itself to fill the area without black bars */
+:global(.shot-preview-tile video) {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important; /* This is what removes the black bars */
+  object-position: center !important;
+}
+
+/* Fix for 3-Shot specifically to ensure they are equal widths */
+.shot-preview-grid-3 {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
 /* 2. Target labels, buttons, and icons inside the menu */
 :global(.str-video__menu-item),
 :global(.str-video__generic-menu__item),
@@ -595,6 +829,22 @@ function HostInner({ roomid }) {
 
 :global(.str-video__screen-share-overlay__title){
 color: white !important;}
+}
+
+:global(.shot-preview-tile .str-video__participant-view),
+:global(.shot-preview-tile .str-video__video-container),
+:global(.shot-preview-tile .str-video__participant-view__video),
+:global(.shot-preview-tile .str-video__video) {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+:global(.shot-preview-tile video) {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+  transform: scaleX(1) !important;
 }
     
 .dashboard-container {
@@ -783,3 +1033,4 @@ color: white !important;}
     </div>
   );
 }
+

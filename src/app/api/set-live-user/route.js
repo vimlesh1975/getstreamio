@@ -31,11 +31,16 @@ export async function POST(req) {
         const callData = await getRes.json();
         const existingPrograms = callData.call?.custom?.programs || {};
 
-        // 2️⃣ MERGE programs
+        // 2️⃣ MERGE programs, or clear the slot when no live user is provided
         const updatedPrograms = {
             ...existingPrograms,
-            [programKey]: liveUserId,
         };
+
+        if (liveUserId) {
+            updatedPrograms[programKey] = liveUserId;
+        } else {
+            delete updatedPrograms[programKey];
+        }
 
         // 3️⃣ UPDATE call (Using the dynamic roomid)
         const patchRes = await fetch(
