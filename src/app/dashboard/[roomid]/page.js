@@ -771,6 +771,22 @@ function HostInner({ roomid }) {
           </div>
         </>}
       <style jsx>{`
+
+      .take-button.active {
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); /* Blue glow for selected guest */
+}
+
+button[style*="background: rgb(239, 68, 68)"] {
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); /* Red glow for live broadcast */
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.8; }
+  100% { opacity: 1; }
+}
+  
         :global(body) {
           margin: 0;
           background: #f1f5f9;
