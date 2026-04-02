@@ -152,111 +152,119 @@ function OutPreviewGrid({ roomid, tally, setTally }) {
     p.publishedTracks.includes(SfuModels.TrackType.SCREEN_SHARE)
   );
 
+  const [showOutPreview, setShowOutPreview] = useState(false);
+
   return (
     <div style={{ display: 'flex', gap: '40px', marginTop: 20, borderTop: "1px solid #cbd5e1", paddingTop: 20 }}>
       <div>
-        <h3 style={{ color: '#475569', fontSize: '0.9rem', marginBottom: 15 }}>Out Preview</h3>
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", maxWidth: 850 }}>
-          {["Out1", "Out2", "Out3", "Out4"].map((key, i) => {
-            const userId = programs[key];
-            const participant = getParticipant(userId);
-            const isLive = Object.values(tally).includes(`SINGLE_${key}`);
+        <button onClick={() => setShowOutPreview(!showOutPreview)}>
+          {showOutPreview ? 'Hide Out Preview' : 'Show Out Preview'}
+        </button>
+        {showOutPreview && (<>
+          <h3 style={{ color: '#475569', fontSize: '0.9rem', marginBottom: 15 }}>Out Preview</h3>
 
-            return (
-              <div
-                key={key}
-                style={{
-                  width: '180px',
-                  height: '180px',
-                  background: '#1e293b',
-                  border: isLive ? '2px solid #ef4444' : '1px solid #334155',
-                  borderRadius: '12px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  overflow: 'hidden'
-                }}
-              >
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", maxWidth: 850 }}>
+            {["Out1", "Out2", "Out3", "Out4"].map((key, i) => {
+              const userId = programs[key];
+              const participant = getParticipant(userId);
+              const isLive = Object.values(tally).includes(`SINGLE_${key}`);
+
+              return (
                 <div
+                  key={key}
                   style={{
-                    color: 'white',
-                    fontSize: '11px',
-                    fontWeight: '800',
-                    letterSpacing: '0.5px',
-                    padding: '10px 8px 6px',
-                    textAlign: 'center'
+                    width: '180px',
+                    height: '180px',
+                    background: '#1e293b',
+                    border: isLive ? '2px solid #ef4444' : '1px solid #334155',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden'
                   }}
                 >
-                  {key.toUpperCase()}
-                </div>
-                <div
-                  style={{
-                    flex: 1,
-                    background: '#050505',
-                    margin: '0 8px 8px',
-                    borderRadius: '8px',
-                    overflow: 'hidden',
-                    cursor: 'pointer'
-                  }}
-                  onClick={() => {
-                    const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
-                    window.open(`${window.location.origin}/program?out=${i + 1}&room=${roomid}`, `HDMI_${i + 1}`, features);
-                  }}
-                >
-                  {participant && (
-                    <ParticipantView
-                      mirror={false}
-                      participant={participant}
-                      trackType={(screenShareParticipant?.userId === participant.userId) ? 'screenShareTrack' : 'videoTrack'}
-                      muteAudio={true}
-                      drawParticipantInfo={false}
-                      style={{ width: "100%", height: "100%" }}
-                    />
-                  )}
-                </div>
+                  <div
+                    style={{
+                      color: 'white',
+                      fontSize: '11px',
+                      fontWeight: '800',
+                      letterSpacing: '0.5px',
+                      padding: '10px 8px 6px',
+                      textAlign: 'center'
+                    }}
+                  >
+                    {key.toUpperCase()}
+                  </div>
+                  <div
+                    style={{
+                      flex: 1,
+                      background: '#050505',
+                      margin: '0 8px 8px',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => {
+                      const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
+                      window.open(`${window.location.origin}/program?out=${i + 1}&room=${roomid}`, `HDMI_${i + 1}`, features);
+                    }}
+                  >
+                    {participant && (
+                      <ParticipantView
+                        mirror={false}
+                        participant={participant}
+                        trackType={(screenShareParticipant?.userId === participant.userId) ? 'screenShareTrack' : 'videoTrack'}
+                        muteAudio={true}
+                        drawParticipantInfo={false}
+                        style={{ width: "100%", height: "100%" }}
+                      />
+                    )}
+                  </div>
 
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(4, 1fr)',
-                    height: '45px',
-                    background: '#000',
-                    borderTop: '1px solid #334155'
-                  }}
-                >
-                  {['CH1', 'CH2', 'CH3', 'CH4'].map((label, channelIndex) => {
-                    const isChannelLive = tally[label] === `SINGLE_${key}`;
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(4, 1fr)',
+                      height: '45px',
+                      background: '#000',
+                      borderTop: '1px solid #334155'
+                    }}
+                  >
+                    {['CH1', 'CH2', 'CH3', 'CH4'].map((label, channelIndex) => {
+                      const isChannelLive = tally[label] === `SINGLE_${key}`;
 
-                    return (
-                      <button
-                        key={label}
-                        onClick={() => {
-                          endpoint({
-                            action: "endpoint",
-                            command: `PLAY ${channelIndex + 1}-1 [HTML] "${window.location.origin}/program?out=${i + 1}&room=${roomid}"`,
-                          });
-                          setTally((prev) => ({ ...prev, [label]: `SINGLE_${key}` }));
-                        }}
-                        style={{
-                          background: isChannelLive ? '#ef4444' : '#0f172a',
-                          border: isChannelLive ? '1px solid #ff7878' : '1px solid #1e293b',
-                          color: isChannelLive ? '#fff' : '#94a3b8',
-                          fontSize: '9px',
-                          fontWeight: 'bold',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          boxShadow: isChannelLive ? 'inset 0 0 10px rgba(255,255,255,0.3)' : 'none'
-                        }}
-                      >
-                        {label}
-                        {isChannelLive && <div style={{ fontSize: '6px', marginTop: '2px' }}>LIVE</div>}
-                      </button>
-                    );
-                  })}
+                      return (
+                        <button
+                          key={label}
+                          onClick={() => {
+                            endpoint({
+                              action: "endpoint",
+                              command: `PLAY ${channelIndex + 1}-1 [HTML] "${window.location.origin}/program?out=${i + 1}&room=${roomid}"`,
+                            });
+                            setTally((prev) => ({ ...prev, [label]: `SINGLE_${key}` }));
+                          }}
+                          style={{
+                            background: isChannelLive ? '#ef4444' : '#0f172a',
+                            border: isChannelLive ? '1px solid #ff7878' : '1px solid #1e293b',
+                            color: isChannelLive ? '#fff' : '#94a3b8',
+                            fontSize: '9px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            boxShadow: isChannelLive ? 'inset 0 0 10px rgba(255,255,255,0.3)' : 'none'
+                          }}
+                        >
+                          {label}
+                          {isChannelLive && <div style={{ fontSize: '6px', marginTop: '2px' }}>LIVE</div>}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </>)}
       </div>
     </div>
   );
@@ -408,6 +416,8 @@ function HostInner({ roomid }) {
   const [muteAudio, setMuteAudio] = useState(true);
 
   const [tally, setTally] = useState({ CH1: null, CH2: null, CH3: null, CH4: null });
+
+  const [showshotpreview, setshowshotpreview] = useState(false);
 
   async function endCallForAll() {
     try {
@@ -640,122 +650,126 @@ function HostInner({ roomid }) {
         </div>
       </div>
 
+      <div><button
+        onClick={() => setshowshotpreview(val => !val)}
+      >{showshotpreview ? 'Hide shots preview' : 'Show shots preview'}</button></div>
+      {showshotpreview &&
+        <>   <h3 style={{ color: '#475569', fontSize: '0.9rem', marginBottom: 15 }}>🎬 Shtos Preview</h3>
+          <div style={{
+            display: 'flex',
+            gap: '20px',
+            padding: '20px',
+            background: '#0f172a',
+            justifyContent: 'center',
+            maxWidth: 600,
+            marginTop: 25,
+            borderRadius: '16px'
+          }}>
+            {[2, 3, 4].map((num) => {
+              const route = num === 2 ? 'twoshot' : num === 3 ? 'threeshot' : 'fourshot';
 
-      <div style={{
-        display: 'flex',
-        gap: '20px',
-        padding: '20px',
-        background: '#0f172a',
-        justifyContent: 'center',
-        maxWidth: 600,
-        marginTop: 25,
-        borderRadius: '16px'
-      }}>
-        {[2, 3, 4].map((num) => {
-          const route = num === 2 ? 'twoshot' : num === 3 ? 'threeshot' : 'fourshot';
-
-          return (
-            <div key={num} style={{
-              width: '180px',
-              height: '180px',
-              background: '#1e293b',
-              border: '1px solid #334155',
-              borderRadius: '12px',
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                color: 'white',
-                fontSize: '11px',
-                fontWeight: '800',
-                letterSpacing: '0.5px',
-                padding: '10px 8px 6px',
-                textAlign: 'center'
-              }}>
-                {num} SHOT
-              </div>
-              {/* Top Section: Local Preview */}
-              <div style={{ flex: 1, display: 'flex', padding: '0 8px 8px' }}>
-                <button
-                  onClick={() => {
-                    const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
-                    window.open(`${window.location.origin}/${route}?out=1&room=${roomid}`, `shot_${num}`, features);
-                  }}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    background: '#050505',
-                    border: 'none',
-                    color: 'transparent',
+              return (
+                <div key={num} style={{
+                  width: '180px',
+                  height: '180px',
+                  background: '#1e293b',
+                  border: '1px solid #334155',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    color: 'white',
+                    fontSize: '11px',
                     fontWeight: '800',
-                    cursor: 'pointer',
-                    display: 'block',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    borderRadius: '8px',
-                    padding: 0,
-                    fontSize: 0,
-                    lineHeight: 0
-                  }}
-                >
-                  <ShotPreviewContent
-                    shotCount={num}
-                    participants={participants}
-                    programs={programs}
-                    screenShareParticipant={screenShareParticipant}
-                  />
-                </button>
-              </div>
-
-              {/* Bottom Section: CasparCG Channels with Tally */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                height: '45px',
-                background: '#000',
-                borderTop: '1px solid #334155'
-              }}>
-                {['CH1', 'CH2', 'CH3', 'CH4'].map((label, i) => {
-                  // Check if THIS specific button (Shot X on Channel Y) is the one currently Live
-                  const isLive = tally[label] === num;
-
-                  return (
+                    letterSpacing: '0.5px',
+                    padding: '10px 8px 6px',
+                    textAlign: 'center'
+                  }}>
+                    {num} SHOT
+                  </div>
+                  {/* Top Section: Local Preview */}
+                  <div style={{ flex: 1, display: 'flex', padding: '0 8px 8px' }}>
                     <button
-                      key={label}
                       onClick={() => {
-                        // 1. Trigger CasparCG
-                        endpoint({
-                          action: "endpoint",
-                          command: `PLAY ${i + 1}-1 [HTML] "${window.location.origin}/${route}?out=${i + 1}&room=${roomid}"`,
-                        });
-                        // 2. Update Tally State
-                        setTally(prev => ({ ...prev, [label]: num }));
+                        const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
+                        window.open(`${window.location.origin}/${route}?out=1&room=${roomid}`, `shot_${num}`, features);
                       }}
                       style={{
-                        // Tally Logic: Red if Live, Dark if not
-                        background: isLive ? '#ef4444' : '#0f172a',
-                        border: isLive ? '1px solid #ff7878' : '1px solid #1e293b',
-                        color: isLive ? '#fff' : '#94a3b8',
-                        fontSize: '9px',
-                        fontWeight: 'bold',
+                        width: '100%',
+                        height: '100%',
+                        background: '#050505',
+                        border: 'none',
+                        color: 'transparent',
+                        fontWeight: '800',
                         cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        // Add a "Glow" effect for the Live button
-                        boxShadow: isLive ? 'inset 0 0 10px rgba(255,255,255,0.3)' : 'none'
+                        display: 'block',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        borderRadius: '8px',
+                        padding: 0,
+                        fontSize: 0,
+                        lineHeight: 0
                       }}
                     >
-                      {label}
-                      {isLive && <div style={{ fontSize: '6px', marginTop: '2px' }}>LIVE</div>}
+                      <ShotPreviewContent
+                        shotCount={num}
+                        participants={participants}
+                        programs={programs}
+                        screenShareParticipant={screenShareParticipant}
+                      />
                     </button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+                  </div>
 
+                  {/* Bottom Section: CasparCG Channels with Tally */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(4, 1fr)',
+                    height: '45px',
+                    background: '#000',
+                    borderTop: '1px solid #334155'
+                  }}>
+                    {['CH1', 'CH2', 'CH3', 'CH4'].map((label, i) => {
+                      // Check if THIS specific button (Shot X on Channel Y) is the one currently Live
+                      const isLive = tally[label] === num;
+
+                      return (
+                        <button
+                          key={label}
+                          onClick={() => {
+                            // 1. Trigger CasparCG
+                            endpoint({
+                              action: "endpoint",
+                              command: `PLAY ${i + 1}-1 [HTML] "${window.location.origin}/${route}?out=${i + 1}&room=${roomid}"`,
+                            });
+                            // 2. Update Tally State
+                            setTally(prev => ({ ...prev, [label]: num }));
+                          }}
+                          style={{
+                            // Tally Logic: Red if Live, Dark if not
+                            background: isLive ? '#ef4444' : '#0f172a',
+                            border: isLive ? '1px solid #ff7878' : '1px solid #1e293b',
+                            color: isLive ? '#fff' : '#94a3b8',
+                            fontSize: '9px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            // Add a "Glow" effect for the Live button
+                            boxShadow: isLive ? 'inset 0 0 10px rgba(255,255,255,0.3)' : 'none'
+                          }}
+                        >
+                          {label}
+                          {isLive && <div style={{ fontSize: '6px', marginTop: '2px' }}>LIVE</div>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>}
       <style jsx>{`
         :global(body) {
           margin: 0;
