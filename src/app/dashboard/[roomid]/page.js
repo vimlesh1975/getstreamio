@@ -54,7 +54,7 @@ function ProgramPreviewGrid({ roomid, tally, setTally }) { // 👈 Added tally p
   return (
     <div style={{ display: 'flex', gap: '40px', marginTop: 20, borderTop: "1px solid #cbd5e1", paddingTop: 20 }}>
       <div>
-        <h3 style={{ color: '#475569', fontSize: '0.9rem', marginBottom: 15 }}>🎬 Out Preview</h3>
+        <h3 style={{ color: '#475569', fontSize: '0.9rem', marginBottom: 15 }}>🎬 Guest Preview</h3>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", maxWidth: 850 }}>
           {["Out1", "Out2", "Out3", "Out4"].map((key, i) => {
             const userId = programs[key];
@@ -158,10 +158,10 @@ function OutPreviewGrid({ roomid, tally, setTally }) {
     <div style={{ display: 'flex', gap: '40px', marginTop: 20, borderTop: "1px solid #cbd5e1", paddingTop: 20 }}>
       <div>
         <button onClick={() => setShowOutPreview(!showOutPreview)}>
-          {showOutPreview ? 'Hide Out Preview' : 'Show Out Preview'}
+          {showOutPreview ? 'Hide Guest Preview' : 'Show Guest Preview'}
         </button>
         {showOutPreview && (<>
-          <h3 style={{ color: '#475569', fontSize: '0.9rem', marginBottom: 15 }}>Out Preview</h3>
+          <h3 style={{ color: '#475569', fontSize: '0.9rem', marginBottom: 15 }}>Guest Preview</h3>
 
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", maxWidth: 850 }}>
             {["Out1", "Out2", "Out3", "Out4"].map((key, i) => {
@@ -193,7 +193,7 @@ function OutPreviewGrid({ roomid, tally, setTally }) {
                       textAlign: 'center'
                     }}
                   >
-                    {'Slot' + (i + 1)}
+                    {'Guest ' + (i + 1)}
                   </div>
                   <div
                     style={{
@@ -615,7 +615,7 @@ function HostInner({ roomid }) {
                     onClick={() => setLive(p, programs[p] === caller.userId ? null : caller.userId)}
                     className={`take-button ${programs[p] === caller.userId ? 'active' : ''}`}
                   >
-                    Slot {p.slice(-1)}
+                    Guset {p.slice(-1)}
                   </button>
                 ))}
               </div>
