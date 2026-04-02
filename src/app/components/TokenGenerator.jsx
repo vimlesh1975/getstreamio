@@ -60,6 +60,17 @@ export default function TokenGeneratorWithDuration({
     }
 
     return (
+        // <div
+        //     style={{
+        //         padding: 16,
+        //         border: "1px solid #333",
+        //         borderRadius: 8,
+        //         background: "#817f7f",
+        //         color: "white",
+        //         maxWidth: 440,
+        //     }}
+        // >
+        // Change the main container div's style prop:
         <div
             style={{
                 padding: 16,
@@ -68,6 +79,10 @@ export default function TokenGeneratorWithDuration({
                 background: "#817f7f",
                 color: "white",
                 maxWidth: 440,
+                // --- ADD THESE ---
+                position: "absolute",
+                zIndex: 100,
+                boxShadow: "0px 4px 12px rgba(0,0,0,0.5)"
             }}
         >
             <h3 style={{ marginTop: 0 }}>
