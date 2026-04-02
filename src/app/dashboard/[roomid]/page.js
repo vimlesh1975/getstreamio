@@ -615,7 +615,7 @@ function HostInner({ roomid }) {
                     onClick={() => setLive(p, programs[p] === caller.userId ? null : caller.userId)}
                     className={`take-button ${programs[p] === caller.userId ? 'active' : ''}`}
                   >
-                    Guset {p.slice(-1)}
+                    Guest {p.slice(-1)}
                   </button>
                 ))}
               </div>
