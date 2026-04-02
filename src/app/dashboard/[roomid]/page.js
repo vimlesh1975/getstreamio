@@ -650,46 +650,71 @@ function HostInner({ roomid }) {
         </div>
       </div>
 
-      <div><button
-        onClick={() => setshowshotpreview(val => !val)}
-      >{showshotpreview ? 'Hide shots preview' : 'Show shots preview'}</button></div>
-      {showshotpreview &&
-        <>   <h3 style={{ color: '#475569', fontSize: '0.9rem', marginBottom: 15 }}>🎬 Shtos Preview</h3>
+      {/* SHOTS PREVIEW SECTION */}
+      <div style={{ marginTop: 25, borderTop: "1px solid #cbd5e1", paddingTop: 20 }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '15px',
+          marginBottom: showshotpreview ? 15 : 0
+        }}>
+          <h3 style={{ color: '#475569', fontSize: '0.9rem', margin: 0 }}>
+            🎬 Shots Preview
+          </h3>
+          <button
+            onClick={() => setshowshotpreview(val => !val)}
+            style={{
+              padding: '4px 12px',
+              fontSize: '11px',
+              cursor: 'pointer',
+              background: showshotpreview ? '#fee2e2' : '#f1f5f9',
+              border: '1px solid #cbd5e1',
+              borderRadius: '4px',
+              color: '#475569',
+              fontWeight: 'bold'
+            }}
+          >
+            {showshotpreview ? 'Hide' : 'Show'}
+          </button>
+        </div>
+
+        {showshotpreview && (
           <div style={{
             display: 'flex',
             gap: '20px',
             padding: '20px',
             background: '#0f172a',
-            justifyContent: 'center',
-            maxWidth: 600,
-            marginTop: 25,
+            justifyContent: 'flex-start', // Aligned with the rest of the dashboard
+            maxWidth: 'fit-content',
+            marginTop: 15,
             borderRadius: '16px'
           }}>
             {[2, 3, 4].map((num) => {
               const route = num === 2 ? 'twoshot' : num === 3 ? 'threeshot' : 'fourshot';
+              const isAnyChannelLive = Object.values(tally).includes(num);
 
               return (
                 <div key={num} style={{
                   width: '180px',
                   height: '180px',
                   background: '#1e293b',
-                  border: '1px solid #334155',
+                  border: isAnyChannelLive ? '2px solid #ef4444' : '1px solid #334155',
                   borderRadius: '12px',
                   display: 'flex',
                   flexDirection: 'column',
-                  overflow: 'hidden'
+                  overflow: 'hidden',
+                  transition: 'border 0.2s'
                 }}>
                   <div style={{
-                    color: 'white',
+                    color: isAnyChannelLive ? '#ef4444' : 'white',
                     fontSize: '11px',
                     fontWeight: '800',
-                    letterSpacing: '0.5px',
                     padding: '10px 8px 6px',
                     textAlign: 'center'
                   }}>
-                    {num} SHOT
+                    {num} SHOT {isAnyChannelLive ? '• LIVE' : ''}
                   </div>
-                  {/* Top Section: Local Preview */}
+
                   <div style={{ flex: 1, display: 'flex', padding: '0 8px 8px' }}>
                     <button
                       onClick={() => {
@@ -701,16 +726,11 @@ function HostInner({ roomid }) {
                         height: '100%',
                         background: '#050505',
                         border: 'none',
-                        color: 'transparent',
-                        fontWeight: '800',
                         cursor: 'pointer',
-                        display: 'block',
                         position: 'relative',
                         overflow: 'hidden',
                         borderRadius: '8px',
-                        padding: 0,
-                        fontSize: 0,
-                        lineHeight: 0
+                        padding: 0
                       }}
                     >
                       <ShotPreviewContent
@@ -722,7 +742,6 @@ function HostInner({ roomid }) {
                     </button>
                   </div>
 
-                  {/* Bottom Section: CasparCG Channels with Tally */}
                   <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(4, 1fr)',
@@ -731,36 +750,27 @@ function HostInner({ roomid }) {
                     borderTop: '1px solid #334155'
                   }}>
                     {['CH1', 'CH2', 'CH3', 'CH4'].map((label, i) => {
-                      // Check if THIS specific button (Shot X on Channel Y) is the one currently Live
                       const isLive = tally[label] === num;
-
                       return (
                         <button
                           key={label}
                           onClick={() => {
-                            // 1. Trigger CasparCG
                             endpoint({
                               action: "endpoint",
                               command: `PLAY ${i + 1}-1 [HTML] "${window.location.origin}/${route}?out=${i + 1}&room=${roomid}"`,
                             });
-                            // 2. Update Tally State
                             setTally(prev => ({ ...prev, [label]: num }));
                           }}
                           style={{
-                            // Tally Logic: Red if Live, Dark if not
                             background: isLive ? '#ef4444' : '#0f172a',
                             border: isLive ? '1px solid #ff7878' : '1px solid #1e293b',
                             color: isLive ? '#fff' : '#94a3b8',
                             fontSize: '9px',
                             fontWeight: 'bold',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                            // Add a "Glow" effect for the Live button
-                            boxShadow: isLive ? 'inset 0 0 10px rgba(255,255,255,0.3)' : 'none'
+                            cursor: 'pointer'
                           }}
                         >
                           {label}
-                          {isLive && <div style={{ fontSize: '6px', marginTop: '2px' }}>LIVE</div>}
                         </button>
                       );
                     })}
@@ -769,7 +779,8 @@ function HostInner({ roomid }) {
               );
             })}
           </div>
-        </>}
+        )}
+      </div>
       <style jsx>{`
 
       .take-button.active {
