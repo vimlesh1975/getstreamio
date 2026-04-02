@@ -259,7 +259,7 @@ function OutPreviewGrid({ roomid, tally, setTally }) {
                       setTally(prev => ({ ...prev, [`CH${i + 1}`]: 'SINGLE_' + key }));
                     }}
                   >
-                    CASPAR {i + 1}
+                    CASPAR CH{i + 1}
                   </button>
                 </div>
               </div>

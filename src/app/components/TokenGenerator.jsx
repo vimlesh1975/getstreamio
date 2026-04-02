@@ -62,7 +62,7 @@ export default function TokenGeneratorWithDuration({
         if (!callerUrl) return;
 
         const cleanPhone = phoneNumber.replace(/\D/g, "");
-        const messageText = `Hello, here is your invite link: ${callerUrl}`;
+        const messageText = `Hello, here is your invite link. Plase Allow Microphone & Camera, Put mobile horizontal and auto rotate ON : ${callerUrl}`;
         const waUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(messageText)}`;
 
         window.open(waUrl, "WhatsAppTab");
