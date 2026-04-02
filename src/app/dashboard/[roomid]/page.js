@@ -632,7 +632,21 @@ function HostInner({ roomid }) {
             setTally={setTally}
           />
         </div>
-        <div>
+        <div
+          style={{
+            padding: 16,
+            border: "1px solid #333",
+            borderRadius: 8,
+            background: "#817f7f",
+            color: "white",
+            maxWidth: 440,
+            // --- ADD THESE ---
+            position: "absolute",
+            left: "50%",
+            zIndex: 100,
+            boxShadow: "0px 4px 12px rgba(0,0,0,0.5)"
+          }}
+        >
           <div>
             <button onClick={() => setShowTokenGenerator(!showTokenGenerator)}>
               {showTokenGenerator ? '✖️ Close Generator' : '🎫 Invite Guest'}

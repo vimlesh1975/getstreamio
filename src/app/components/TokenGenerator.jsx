@@ -71,20 +71,22 @@ export default function TokenGeneratorWithDuration({
         //     }}
         // >
         // Change the main container div's style prop:
-        <div
-            style={{
-                padding: 16,
-                border: "1px solid #333",
-                borderRadius: 8,
-                background: "#817f7f",
-                color: "white",
-                maxWidth: 440,
-                // --- ADD THESE ---
-                position: "absolute",
-                zIndex: 100,
-                boxShadow: "0px 4px 12px rgba(0,0,0,0.5)"
-            }}
-        >
+        // <div
+        //     style={{
+        //         padding: 16,
+        //         border: "1px solid #333",
+        //         borderRadius: 8,
+        //         background: "#817f7f",
+        //         color: "white",
+        //         maxWidth: 440,
+        //         // --- ADD THESE ---
+        //         position: "absolute",
+        //         left: "50%",
+        //         zIndex: 100,
+        //         boxShadow: "0px 4px 12px rgba(0,0,0,0.5)"
+        //     }}
+        // >
+        <div>
             <h3 style={{ marginTop: 0 }}>
                 Generate Token for {roomid.replace(/_/g, " ")}
             </h3>
