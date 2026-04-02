@@ -193,7 +193,7 @@ function OutPreviewGrid({ roomid, tally, setTally }) {
                       textAlign: 'center'
                     }}
                   >
-                    {key.toUpperCase()}
+                    {'Slot' + (i + 1)}
                   </div>
                   <div
                     style={{
@@ -615,7 +615,7 @@ function HostInner({ roomid }) {
                     onClick={() => setLive(p, programs[p] === caller.userId ? null : caller.userId)}
                     className={`take-button ${programs[p] === caller.userId ? 'active' : ''}`}
                   >
-                    OUT {p.slice(-1)}
+                    Slot {p.slice(-1)}
                   </button>
                 ))}
               </div>
