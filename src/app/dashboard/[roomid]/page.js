@@ -724,12 +724,13 @@ function HostInner({ roomid }) {
                     fontSize: '11px',
                     fontWeight: '800',
                     padding: '10px 8px 6px',
-                    textAlign: 'center'
+                    textAlign: 'center',
+                    flex: '0 0 auto'
                   }}>
                     {num} SHOT {isAnyChannelLive ? '• LIVE' : ''}
                   </div>
 
-                  <div style={{ flex: 1, display: 'flex', padding: '0 8px 8px' }}>
+                  <div style={{ flex: '1 1 auto', minHeight: 0, display: 'flex', padding: '0 8px 8px' }}>
                     <button
                       onClick={() => {
                         const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
@@ -760,6 +761,7 @@ function HostInner({ roomid }) {
                     display: 'grid',
                     gridTemplateColumns: 'repeat(4, 1fr)',
                     height: '45px',
+                    flex: '0 0 45px',
                     background: '#000',
                     borderTop: '1px solid #334155'
                   }}>
