@@ -186,7 +186,7 @@ function OutPreviewGrid({ roomid, tally, setTally }) {
 
       {/* CONDITIONAL RENDER: The actual preview grid */}
       {showOutPreview && (
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", maxWidth: 850, marginTop: 15 }}>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", maxWidth: 930, marginTop: 15 }}>
           {["Out1", "Out2", "Out3", "Out4"].map((key, i) => {
             const userId = programs[key];
             const participant = getParticipant(userId);
@@ -196,7 +196,7 @@ function OutPreviewGrid({ roomid, tally, setTally }) {
               <div
                 key={key}
                 style={{
-                  width: '180px',
+                  width: '220px',
                   background: '#000',
                   border: isLive ? '2px solid #ef4444' : '2px solid #334155',
                   borderRadius: '8px',
@@ -216,7 +216,8 @@ function OutPreviewGrid({ roomid, tally, setTally }) {
 
                 <div
                   style={{
-                    height: 100,
+                    width: '100%',
+                    aspectRatio: '16 / 9',
                     background: "#050505",
                     borderRadius: 4,
                     overflow: "hidden",
@@ -712,8 +713,7 @@ function HostInner({ roomid }) {
 
               return (
                 <div key={num} style={{
-                  width: '180px',
-                  height: '180px',
+                  width: '220px',
                   background: '#1e293b',
                   border: isAnyChannelLive ? '2px solid #ef4444' : '1px solid #334155',
                   borderRadius: '12px',
@@ -733,7 +733,7 @@ function HostInner({ roomid }) {
                     {num} SHOT {isAnyChannelLive ? '• LIVE' : ''}
                   </div>
 
-                  <div style={{ flex: '1 1 auto', minHeight: 0, display: 'flex', padding: '0 8px 8px' }}>
+                  <div style={{ flex: '0 0 auto', display: 'flex', padding: '0 8px 8px' }}>
                     <button
                       onClick={() => {
                         const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
@@ -741,7 +741,7 @@ function HostInner({ roomid }) {
                       }}
                       style={{
                         width: '100%',
-                        height: '100%',
+                        aspectRatio: '16 / 9',
                         background: '#050505',
                         border: 'none',
                         cursor: 'pointer',
