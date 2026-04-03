@@ -75,11 +75,13 @@ function ProgramPreviewGrid({ roomid, tally, setTally }) { // 👈 Added tally p
                 transition: 'border 0.2s'
               }}>
                 <div style={{
-                  color: isLive ? "#ef4444" : "#94a3b8",
-                  fontSize: 10,
+                  color: "white",
+                  fontSize: '11px',
                   textAlign: "center",
                   marginBottom: 4,
-                  fontWeight: 'bold'
+                  fontWeight: '800',
+                  padding: '6px 8px 4px',
+                  letterSpacing: '0.5px'
                 }}>
                   {`Guest ${i + 1}`} {isLive ? "LIVE" : ""}
                 </div>
@@ -205,13 +207,14 @@ function OutPreviewGrid({ roomid, tally, setTally }) {
                 }}
               >
                 <div style={{
-                  color: isLive ? "#ef4444" : "#94a3b8",
-                  fontSize: 10,
-                  textAlign: "center",
-                  marginBottom: 4,
-                  fontWeight: 'bold'
+                  color: isLive ? '#ef4444' : 'white',
+                  fontSize: '11px',
+                  fontWeight: '800',
+                  padding: '10px 8px 6px',
+                  textAlign: 'center',
+                  letterSpacing: '0.5px'
                 }}>
-                  {`Guest ${i + 1}`} {isLive ? "LIVE" : ""}
+                  {`Guest ${i + 1}`} {isLive ? 'LIVE' : ''}
                 </div>
 
                 <div
@@ -646,7 +649,7 @@ function HostInner({ roomid }) {
             maxWidth: 440,
             // --- ADD THESE ---
             position: "absolute",
-            left: "50%",
+            left: "60%",
             zIndex: 100,
             boxShadow: "0px 4px 12px rgba(0,0,0,0.5)"
           }}
