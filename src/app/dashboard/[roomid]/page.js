@@ -81,7 +81,7 @@ function ProgramPreviewGrid({ roomid, tally, setTally }) { // 👈 Added tally p
                   marginBottom: 4,
                   fontWeight: 'bold'
                 }}>
-                  {key.toUpperCase()} {isLive ? "• LIVE" : ""}
+                  {`Guest ${i + 1}`} {isLive ? "LIVE" : ""}
                 </div>
                 <div
                   style={{ height: 100, background: "#050505", borderRadius: 4, overflow: "hidden" }}
@@ -211,7 +211,7 @@ function OutPreviewGrid({ roomid, tally, setTally }) {
                   marginBottom: 4,
                   fontWeight: 'bold'
                 }}>
-                  {key.toUpperCase()} {isLive ? "• LIVE" : ""}
+                  {`Guest ${i + 1}`} {isLive ? "LIVE" : ""}
                 </div>
 
                 <div
@@ -1101,4 +1101,5 @@ color: white !important;}
     </div>
   );
 }
+
 
