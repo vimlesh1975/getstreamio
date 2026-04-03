@@ -99,6 +99,7 @@ function ProgramPreviewGrid({ roomid, tally, setTally }) { // 👈 Added tally p
                       trackType={(screenShareParticipant?.userId === participant.userId) ? 'screenShareTrack' : 'videoTrack'}
                       muteAudio={true}
                       drawParticipantInfo={false}
+                      ParticipantViewUI={null}
                       style={{ width: "100%", height: "100%" }}
                     />
                   )}
@@ -233,6 +234,7 @@ function OutPreviewGrid({ roomid, tally, setTally }) {
                       trackType={(screenShareParticipant?.userId === participant.userId) ? 'screenShareTrack' : 'videoTrack'}
                       muteAudio={true}
                       drawParticipantInfo={false}
+                      ParticipantViewUI={null}
                       style={{ width: "100%", height: "100%" }}
                     />
                   )}
@@ -339,6 +341,7 @@ function ShotPreviewContent({ shotCount, participants, programs, screenSharePart
               trackType={(screenShareParticipant?.userId === caller.userId) ? 'screenShareTrack' : 'videoTrack'}
               drawParticipantInfo={false}
               muteAudio={true}
+              ParticipantViewUI={null}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (
@@ -902,6 +905,14 @@ color: white !important;}
   object-fit: cover !important;
   display: block !important;
   transform: scaleX(1) !important;
+}
+
+:global(.shot-preview-tile .str-video__participant-actions),
+:global(.shot-preview-tile .str-video__participant-view__options),
+:global(.shot-preview-tile .str-video__participant-view__menu),
+:global(.shot-preview-tile button[aria-label="More options"]),
+:global(.str-video__participant-view button[aria-label="More options"]) {
+  display: none !important;
 }
     
 .dashboard-container {
