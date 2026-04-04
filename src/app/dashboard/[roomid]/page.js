@@ -75,13 +75,15 @@ function ProgramPreviewGrid({ roomid, tally, setTally }) { // 👈 Added tally p
                 transition: 'border 0.2s'
               }}>
                 <div style={{
-                  color: isLive ? "#ef4444" : "#94a3b8",
-                  fontSize: 10,
+                  color: "white",
+                  fontSize: '11px',
                   textAlign: "center",
                   marginBottom: 4,
-                  fontWeight: 'bold'
+                  fontWeight: '800',
+                  padding: '6px 8px 4px',
+                  letterSpacing: '0.5px'
                 }}>
-                  {key.toUpperCase()} {isLive ? "• LIVE" : ""}
+                  {`Guest ${i + 1}`} {isLive ? "LIVE" : ""}
                 </div>
                 <div
                   style={{ height: 100, background: "#050505", borderRadius: 4, overflow: "hidden" }}
@@ -99,6 +101,7 @@ function ProgramPreviewGrid({ roomid, tally, setTally }) { // 👈 Added tally p
                       trackType={(screenShareParticipant?.userId === participant.userId) ? 'screenShareTrack' : 'videoTrack'}
                       muteAudio={true}
                       drawParticipantInfo={false}
+                      ParticipantViewUI={null}
                       style={{ width: "100%", height: "100%" }}
                     />
                   )}
@@ -185,7 +188,7 @@ function OutPreviewGrid({ roomid, tally, setTally }) {
 
       {/* CONDITIONAL RENDER: The actual preview grid */}
       {showOutPreview && (
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", maxWidth: 850, marginTop: 15 }}>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", maxWidth: 930, marginTop: 15 }}>
           {["Out1", "Out2", "Out3", "Out4"].map((key, i) => {
             const userId = programs[key];
             const participant = getParticipant(userId);
@@ -195,7 +198,7 @@ function OutPreviewGrid({ roomid, tally, setTally }) {
               <div
                 key={key}
                 style={{
-                  width: '180px',
+                  width: '220px',
                   background: '#000',
                   border: isLive ? '2px solid #ef4444' : '2px solid #334155',
                   borderRadius: '8px',
@@ -204,18 +207,20 @@ function OutPreviewGrid({ roomid, tally, setTally }) {
                 }}
               >
                 <div style={{
-                  color: isLive ? "#ef4444" : "#94a3b8",
-                  fontSize: 10,
-                  textAlign: "center",
-                  marginBottom: 4,
-                  fontWeight: 'bold'
+                  color: isLive ? '#ef4444' : 'white',
+                  fontSize: '11px',
+                  fontWeight: '800',
+                  padding: '10px 8px 6px',
+                  textAlign: 'center',
+                  letterSpacing: '0.5px'
                 }}>
-                  {key.toUpperCase()} {isLive ? "• LIVE" : ""}
+                  {`Guest ${i + 1}`} {isLive ? 'LIVE' : ''}
                 </div>
 
                 <div
                   style={{
-                    height: 100,
+                    width: '100%',
+                    aspectRatio: '16 / 9',
                     background: "#050505",
                     borderRadius: 4,
                     overflow: "hidden",
@@ -233,6 +238,7 @@ function OutPreviewGrid({ roomid, tally, setTally }) {
                       trackType={(screenShareParticipant?.userId === participant.userId) ? 'screenShareTrack' : 'videoTrack'}
                       muteAudio={true}
                       drawParticipantInfo={false}
+                      ParticipantViewUI={null}
                       style={{ width: "100%", height: "100%" }}
                     />
                   )}
@@ -339,6 +345,7 @@ function ShotPreviewContent({ shotCount, participants, programs, screenSharePart
               trackType={(screenShareParticipant?.userId === caller.userId) ? 'screenShareTrack' : 'videoTrack'}
               drawParticipantInfo={false}
               muteAudio={true}
+              ParticipantViewUI={null}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (
@@ -642,7 +649,7 @@ function HostInner({ roomid }) {
             maxWidth: 440,
             // --- ADD THESE ---
             position: "absolute",
-            left: "50%",
+            left: "60%",
             zIndex: 100,
             boxShadow: "0px 4px 12px rgba(0,0,0,0.5)"
           }}
@@ -709,8 +716,7 @@ function HostInner({ roomid }) {
 
               return (
                 <div key={num} style={{
-                  width: '180px',
-                  height: '180px',
+                  width: '220px',
                   background: '#1e293b',
                   border: isAnyChannelLive ? '2px solid #ef4444' : '1px solid #334155',
                   borderRadius: '12px',
@@ -724,12 +730,13 @@ function HostInner({ roomid }) {
                     fontSize: '11px',
                     fontWeight: '800',
                     padding: '10px 8px 6px',
-                    textAlign: 'center'
+                    textAlign: 'center',
+                    flex: '0 0 auto'
                   }}>
                     {num} SHOT {isAnyChannelLive ? '• LIVE' : ''}
                   </div>
 
-                  <div style={{ flex: 1, display: 'flex', padding: '0 8px 8px' }}>
+                  <div style={{ flex: '0 0 auto', display: 'flex', padding: '0 8px 8px' }}>
                     <button
                       onClick={() => {
                         const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
@@ -737,7 +744,7 @@ function HostInner({ roomid }) {
                       }}
                       style={{
                         width: '100%',
-                        height: '100%',
+                        aspectRatio: '16 / 9',
                         background: '#050505',
                         border: 'none',
                         cursor: 'pointer',
@@ -760,6 +767,7 @@ function HostInner({ roomid }) {
                     display: 'grid',
                     gridTemplateColumns: 'repeat(4, 1fr)',
                     height: '45px',
+                    flex: '0 0 45px',
                     background: '#000',
                     borderTop: '1px solid #334155'
                   }}>
@@ -900,6 +908,14 @@ color: white !important;}
   object-fit: cover !important;
   display: block !important;
   transform: scaleX(1) !important;
+}
+
+:global(.shot-preview-tile .str-video__participant-actions),
+:global(.shot-preview-tile .str-video__participant-view__options),
+:global(.shot-preview-tile .str-video__participant-view__menu),
+:global(.shot-preview-tile button[aria-label="More options"]),
+:global(.str-video__participant-view button[aria-label="More options"]) {
+  display: none !important;
 }
     
 .dashboard-container {
@@ -1088,4 +1104,5 @@ color: white !important;}
     </div>
   );
 }
+
 

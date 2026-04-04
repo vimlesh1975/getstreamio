@@ -71,7 +71,7 @@ export default function TokenGeneratorWithDuration({
     return (
         <div>
             <h3 style={{ marginTop: 0 }}>
-                Generate Token for {roomid.replace(/_/g, " ")}
+                Generate Invite Link for {roomid.replace(/_/g, " ")}
             </h3>
 
             <div className="generator-toolbar">
@@ -105,7 +105,7 @@ export default function TokenGeneratorWithDuration({
                     disabled={loading || !userId}
                     className="generate-btn"
                 >
-                    {loading ? "Generating..." : "Generate Invite Link"}
+                    {loading ? "Generating" : "Generate"}
                 </button>
             </div>
 
@@ -206,9 +206,9 @@ export default function TokenGeneratorWithDuration({
                     min-width: 170px;
                 }
                 .field-user {
-                    flex: 0 0 120px;
-                    min-width: 120px;
-                    max-width: 120px;
+                    flex: 0 0 170px;
+                    min-width: 170px;
+                    max-width: 170px;
                 }
                 .field-small {
                     flex: 0 0 100px;
