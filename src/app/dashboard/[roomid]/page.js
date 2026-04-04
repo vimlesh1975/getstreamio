@@ -26,7 +26,7 @@ const endpoint = async (str) => {
     body: JSON.stringify(str),
   };
   try {
-    await fetch("http://localhost:3000/api/casparcg", requestOptions);
+    await fetch("http://localhost:13000/api/casparcg", requestOptions);
   } catch (e) {
     console.error("CasparCG Error:", e);
   }
