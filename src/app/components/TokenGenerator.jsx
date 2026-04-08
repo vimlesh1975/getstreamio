@@ -47,6 +47,8 @@ export default function TokenGeneratorWithDuration({
         } finally {
             setLoading(false);
         }
+
+        setUserId(`${roomid}-${Date.now()}`)
     }
 
     const callerUrl = useMemo(() => {
