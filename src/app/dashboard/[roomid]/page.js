@@ -446,6 +446,21 @@ function HostInner({ roomid }) {
     }
   };
 
+  const removeSession = async (sessionId) => {
+    if (!sessionId) return;
+    try {
+      await call.update({
+        custom: {
+          ...custom,
+          kicked_sessions: [...(custom?.kicked_sessions || []), sessionId]
+        }
+      });
+    } catch (err) {
+      console.error("Failed to kick session:", err);
+      alert('Failed: ' + err.message);
+    }
+  };
+
 
   // Inside HostInner in your dashboard page
   async function setLive(programKey, userId) {
@@ -585,7 +600,7 @@ function HostInner({ roomid }) {
             <div key={caller.sessionId} className={`caller-card ${isLive ? 'is-live' : ''}`}>
               <div className="card-header">
                 <span className="user-id-label">{caller.userId}</span><button onClick={() => {
-                  removeUser(caller.userId);
+                  removeSession(caller.sessionId);
                 }}>Remove</button>{caller.roles}
                 {isLive && <span className="live-pill">LIVE</span>}
                 <div className={`audio-active-dot ${caller.isSpeaking ? "on" : ""}`} />

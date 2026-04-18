@@ -200,9 +200,10 @@ export default function CallerWithTokenPage({ params }) {
 }
 
 function MeetingUI({ roomid }) {
-    const { useParticipants, useLocalParticipant } = useCallStateHooks();
+    const { useParticipants, useLocalParticipant, useCallCustomData } = useCallStateHooks();
     const participants = useParticipants();
     const localParticipant = useLocalParticipant();
+    const customData = useCallCustomData();
     const call = useCall();
     const [isFinished, setIsFinished] = useState(false);
 
@@ -213,18 +214,33 @@ function MeetingUI({ roomid }) {
         p.publishedTracks.includes(SfuModels.TrackType.SCREEN_SHARE) || p.screenShareStream
     );
 
+    // Handle explicitly targeted session kicks via synchronized call state
+    useEffect(() => {
+        if (!call || !localParticipant?.sessionId) return;
+        if (customData?.kicked_sessions?.includes(localParticipant.sessionId)) {
+             call.leave();
+             setIsFinished(true);
+        }
+    }, [customData?.kicked_sessions, localParticipant?.sessionId, call]);
+
     useEffect(() => {
         if (!call) return;
         const handleCallEvent = (event) => {
+            // Check if this specific session was the one that left, 
+            // instead of user.id which drops all devices for the same user
             if ((event.type === 'call.session_participant_left' &&
-                event.participant.user.id === call.currentUserId) ||
+                (event.participant.session_id === localParticipant?.sessionId || event.participant.sessionId === localParticipant?.sessionId)) ||
                 event.type === 'call.ended') {
                 setIsFinished(true);
             }
         };
+
         const unsubscribe = call.on('all', handleCallEvent);
-        return () => unsubscribe();
-    }, [call]);
+        
+        return () => {
+            unsubscribe();
+        };
+    }, [call, localParticipant?.sessionId]);
 
     // --- THE POLISHED EXIT SCREEN ---
     if (isFinished) {
