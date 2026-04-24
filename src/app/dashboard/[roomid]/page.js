@@ -244,29 +244,35 @@ function OutPreviewGrid({ roomid, tally, setTally }) {
                   )}
                 </div>
 
-                <div style={{ display: 'flex', gap: '2px', marginTop: '4px' }}>
-                  <button
-                    style={{
-                      flex: 1,
-                      fontSize: '9px',
-                      padding: '5px',
-                      cursor: 'pointer',
-                      background: isLive ? '#ef4444' : '#1e293b',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      fontWeight: 'bold'
-                    }}
-                    onClick={() => {
-                      endpoint({
-                        action: "endpoint",
-                        command: `play ${i + 1}-1 [html] ${window.location.origin}/program?out=${i + 1}&room=${roomid}`,
-                      });
-                      setTally(prev => ({ ...prev, [`CH${i + 1}`]: 'SINGLE_' + key }));
-                    }}
-                  >
-                    CASPAR CH{i + 1}
-                  </button>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '2px', marginTop: '4px' }}>
+                  {['CH1', 'CH2', 'CH3', 'CH4'].map((label, channelIndex) => {
+                    const isChannelLive = tally[label] === `SINGLE_${key}`;
+
+                    return (
+                      <button
+                        key={label}
+                        style={{
+                          fontSize: '9px',
+                          padding: '5px 2px',
+                          cursor: 'pointer',
+                          background: isChannelLive ? '#ef4444' : '#1e293b',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          fontWeight: 'bold'
+                        }}
+                        onClick={() => {
+                          endpoint({
+                            action: "endpoint",
+                            command: `play ${channelIndex + 1}-1 [html] ${window.location.origin}/program?out=${i + 1}&room=${roomid}`,
+                          });
+                          setTally(prev => ({ ...prev, [label]: `SINGLE_${key}` }));
+                        }}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             );
