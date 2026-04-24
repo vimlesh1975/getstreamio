@@ -724,8 +724,7 @@ function HostInner({ roomid }) {
           <div style={{
             display: 'flex',
             gap: '20px',
-            padding: '20px',
-            background: '#0f172a',
+            padding: '20px 0',
             justifyContent: 'flex-start', // Aligned with the rest of the dashboard
             maxWidth: 'fit-content',
             marginTop: 15,
