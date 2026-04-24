@@ -153,7 +153,7 @@ export default function TokenGeneratorWithDuration({
                             type="button"
                             onClick={() => {
                                 const features = "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,resizable=yes";
-                                window.open(callerUrl, "GuestWindow", features);
+                                window.open(callerUrl, "GuestWindow_" + Date.now(), features);
                             }}
                         >
                             Test URL
