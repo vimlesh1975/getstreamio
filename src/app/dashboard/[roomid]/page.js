@@ -409,7 +409,6 @@ export default function HostPage({ params }) {
       <StreamCall call={call}>
         <StreamTheme>
           <HostInner roomid={roomid} />
-          <CallControls />
         </StreamTheme>
 
       </StreamCall>
@@ -539,9 +538,8 @@ function HostInner({ roomid }) {
 
   return (
     <div className="dashboard-container">
-      <div style={{ marginBottom: 20, borderBottom: '1px solid #ddd', pb: 10 }}>
-        <h2 style={{ margin: 0 }}>STUDIO: {roomid?.replace(/_/g, " ")}</h2>
-      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+      <h2 style={{ margin: 0, marginRight: '10px' }}>STUDIO: {roomid?.replace(/_/g, " ")}</h2>
       <button
         style={{
           background: "#0023a1",
@@ -592,6 +590,10 @@ function HostInner({ roomid }) {
       >
         {muteAudio ? "UnMute" : "Mute"}
       </button>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <CallControls />
+      </div>
+      </div>
 
       <div className="gallery-grid">
 
