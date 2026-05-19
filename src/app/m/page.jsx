@@ -10,8 +10,6 @@ import {
     SpeakerLayout,
     CallControls,
     StreamTheme, // 2. Import StreamTheme
-    SfuModels,
-    useCallStateHooks,
 
 } from "@stream-io/video-react-sdk";
 
@@ -21,24 +19,21 @@ export default function MeetingPage() {
     const [client, setClient] = useState(null);
     const [call, setCall] = useState(null);
     const [userId] = useState(() => "caller-" + Math.random().toString(36).slice(2, 8));
-    const { useParticipants } = useCallStateHooks();
-
-    const participants = useParticipants();
-    const screenShareParticipant = participants.find((p) =>
-        p.publishedTracks.includes(SfuModels.TrackType.SCREEN_SHARE)
-    );
 
     useEffect(() => {
+        let joinedCall;
+
         async function init() {
             const c = await createStreamClient(userId);
             const newCall = c.call("default", "room-1");
 
             await newCall.join({
                 create: true,
-                video: true,
-                audio: true,
+                video: false,
+                audio: false,
             });
 
+            joinedCall = newCall;
             setClient(c);
             setCall(newCall);
         }
@@ -46,9 +41,9 @@ export default function MeetingPage() {
 
         // Cleanup: Leave the call when the component unmounts
         return () => {
-            if (call) call.leave();
+            if (joinedCall) joinedCall.leave();
         };
-    }, []);
+    }, [userId]);
 
     if (!client || !call) return <div className="h-screen flex items-center justify-center">Loading...</div>;
 
